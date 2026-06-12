@@ -1,0 +1,52 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL:jdbc:mysql://localhost:3306/agricultural_products?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 1000ms
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.agricultural.products.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+jwt:
+  secret: ${JWT_SECRET:please-change-this-jwt-secret-in-local-env}
+  expiration: 86400000
+
+file:
+  upload-path: D:/
+
+storage:
+  zos:
+    endpoint: https://shanghai-9.zos.ctyun.cn
+    bucket: bucket-7aec
+    region: shanghai-9
+    access-key: ${ZOS_ACCESS_KEY:}
+    secret-key: ${ZOS_SECRET_KEY:}
+    presign-expire-seconds: 3600
+    path-style-access: true
+
+deepseek:
+  api-key: ${DEEPSEEK_API_KEY:}
+  base-url: https://api.deepseek.com
+  model: deepseek-chat
+  max-tokens: 1024
+  temperature: 0.7
+  timeout-seconds: 30

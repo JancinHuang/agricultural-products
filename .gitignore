@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.npm-cache/
+
+# Frontend build/cache
+frontend/dist/
+frontend/node_modules/
+frontend/.vite/
+frontend/.frontend-run*.log
+
+# Backend build
+backend/target/
+
+# Logs
+*.log
+logs/
+
+# IDE/editor
+.idea/
+.vscode/
+backend/.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Runtime uploads/cache
+uploads/
+tmp/
+temp/
+
