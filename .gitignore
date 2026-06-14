@@ -34,4 +34,4 @@ Thumbs.db
 uploads/
 tmp/
 temp/
-
+db_recovery_backups_*/

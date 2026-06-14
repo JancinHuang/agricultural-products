@@ -127,7 +127,7 @@
             :show-file-list="false"
             :before-upload="beforeUpload"
             :http-request="handleUpload"
-            accept="image/*"
+            :accept="ALLOWED_IMAGE_ACCEPT"
           >
             <div class="upload-trigger">
               <el-image
@@ -173,6 +173,7 @@ import { getCategoryList } from '@/api/category'
 import { uploadFile } from '@/api/upload'
 import { formatTime } from '@/utils/time'
 import { imageUtils } from '@/utils/imageUtils'
+import { ALLOWED_IMAGE_ACCEPT, allowedImageMessage, isAllowedImageFile } from '@/utils/uploadValidation'
 
 const getImageUrl = (url) => imageUtils.getImageUrl(url)
 
@@ -344,11 +345,11 @@ const handleDelete = (row) => {
 }
 
 const beforeUpload = (file) => {
-  const isImage = file.type ? file.type.startsWith('image/') : /\.(png|jpe?g|gif|webp|bmp)$/i.test(file.name)
+  const isImage = isAllowedImageFile(file)
   const isLt5M = file.size / 1024 / 1024 < 5
   
   if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
+    ElMessage.error(allowedImageMessage)
     return false
   }
   if (!isLt5M) {

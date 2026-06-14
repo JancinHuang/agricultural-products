@@ -22,18 +22,32 @@ public interface CartMapper {
     @Insert("INSERT INTO cart(user_id, product_id, quantity, selected, create_time) VALUES(#{userId}, #{productId}, #{quantity}, 1, NOW())")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Cart cart);
+
+    @Insert("INSERT INTO cart(user_id, product_id, quantity, selected, create_time) " +
+            "VALUES(#{userId}, #{productId}, #{quantity}, 1, NOW()) " +
+            "ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity), selected = 1")
+    int insertOrIncrease(Cart cart);
     
     @Update("UPDATE cart SET quantity = #{quantity} WHERE id = #{id}")
     int updateQuantity(@Param("id") Long id, @Param("quantity") Integer quantity);
+
+    @Update("UPDATE cart SET quantity = #{quantity} WHERE id = #{id} AND user_id = #{userId}")
+    int updateQuantityByUserId(@Param("id") Long id, @Param("userId") Long userId, @Param("quantity") Integer quantity);
     
     @Update("UPDATE cart SET selected = #{selected} WHERE id = #{id}")
     int updateSelected(@Param("id") Long id, @Param("selected") Integer selected);
+
+    @Update("UPDATE cart SET selected = #{selected} WHERE id = #{id} AND user_id = #{userId}")
+    int updateSelectedByUserId(@Param("id") Long id, @Param("userId") Long userId, @Param("selected") Integer selected);
     
     @Update("UPDATE cart SET selected = #{selected} WHERE user_id = #{userId}")
     int updateAllSelected(@Param("userId") Long userId, @Param("selected") Integer selected);
     
     @Delete("DELETE FROM cart WHERE id = #{id}")
     int deleteById(Long id);
+
+    @Delete("DELETE FROM cart WHERE id = #{id} AND user_id = #{userId}")
+    int deleteByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
     
     @Delete("DELETE FROM cart WHERE user_id = #{userId}")
     int deleteByUserId(Long userId);

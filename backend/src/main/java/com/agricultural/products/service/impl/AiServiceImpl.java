@@ -1,13 +1,20 @@
 package com.agricultural.products.service.impl;
 
 import com.agricultural.products.config.DeepSeekProperties;
-import com.agricultural.products.entity.*;
-import com.agricultural.products.mapper.*;
+import com.agricultural.products.entity.Category;
+import com.agricultural.products.entity.Favorite;
+import com.agricultural.products.entity.Order;
+import com.agricultural.products.entity.OrderItem;
+import com.agricultural.products.entity.Product;
+import com.agricultural.products.mapper.CategoryMapper;
+import com.agricultural.products.mapper.FavoriteMapper;
+import com.agricultural.products.mapper.OrderItemMapper;
+import com.agricultural.products.mapper.OrderMapper;
+import com.agricultural.products.mapper.ProductMapper;
 import com.agricultural.products.service.AiService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -15,7 +22,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -25,229 +35,238 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class AiServiceImpl implements AiService {
 
-    @Autowired
-    private DeepSeekProperties properties;
+    private static final long REQUEST_INTERVAL_MS = 3000;
 
-    @Autowired
-    private ProductMapper productMapper;
-
-    @Autowired
-    private CategoryMapper categoryMapper;
-
-    @Autowired
-    private OrderMapper orderMapper;
-
-    @Autowired
-    private OrderItemMapper orderItemMapper;
-
-    @Autowired
-    private FavoriteMapper favoriteMapper;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
+    private final DeepSeekProperties properties;
+    private final ProductMapper productMapper;
+    private final CategoryMapper categoryMapper;
+    private final OrderMapper orderMapper;
+    private final OrderItemMapper orderItemMapper;
+    private final FavoriteMapper favoriteMapper;
+    private final ObjectMapper objectMapper;
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
-
-    /** 简易防刷：记录每个用户最后请求时间 */
     private final ConcurrentHashMap<String, Long> lastRequestTime = new ConcurrentHashMap<>();
 
-    private static final long REQUEST_INTERVAL_MS = 3000;
+    public AiServiceImpl(
+            DeepSeekProperties properties,
+            ProductMapper productMapper,
+            CategoryMapper categoryMapper,
+            OrderMapper orderMapper,
+            OrderItemMapper orderItemMapper,
+            FavoriteMapper favoriteMapper,
+            ObjectMapper objectMapper) {
+        this.properties = properties;
+        this.productMapper = productMapper;
+        this.categoryMapper = categoryMapper;
+        this.orderMapper = orderMapper;
+        this.orderItemMapper = orderItemMapper;
+        this.favoriteMapper = favoriteMapper;
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public String chat(Long userId, String userMessage, List<Map<String, String>> conversationHistory) {
-        // 简易防刷检查
         String clientKey = userId != null ? "user_" + userId : "anon";
         Long lastTime = lastRequestTime.get(clientKey);
         long now = System.currentTimeMillis();
-        if (lastTime != null && (now - lastTime) < REQUEST_INTERVAL_MS) {
-            return "你的操作太频繁了，请稍等一下再试哦 ⏳";
+        if (lastTime != null && now - lastTime < REQUEST_INTERVAL_MS) {
+            return "你的操作太频繁了，请稍等一下再试。";
         }
         lastRequestTime.put(clientKey, now);
 
         try {
-            // 1. 构建商品上下文
             String productContext = buildProductContext(userId, userMessage);
-
-            // 2. 构建 system prompt
             String systemPrompt = buildSystemPrompt(productContext);
 
-            // 3. 组装消息列表
             List<Map<String, String>> messages = new ArrayList<>();
             messages.add(Map.of("role", "system", "content", systemPrompt));
 
-            // 添加对话历史（最多保留 10 条）
             if (conversationHistory != null && !conversationHistory.isEmpty()) {
                 int start = Math.max(0, conversationHistory.size() - 10);
                 messages.addAll(conversationHistory.subList(start, conversationHistory.size()));
             }
 
             messages.add(Map.of("role", "user", "content", userMessage));
-
-            // 4. 调用 DeepSeek API
             return callDeepSeekApi(messages);
         } catch (Exception e) {
             log.error("AI 助手服务异常", e);
-            return "抱歉，AI助手暂时无法回答，请稍后再试 😥";
+            return "抱歉，AI 助手暂时无法回答，请稍后再试。";
         }
     }
 
-    /**
-     * 构建商品上下文信息
-     */
     private String buildProductContext(Long userId, String userMessage) {
         StringBuilder context = new StringBuilder();
 
-        // 分类列表
-        try {
-            List<Category> categories = categoryMapper.findAll();
-            if (categories != null && !categories.isEmpty()) {
-                context.append("## 商城分类\n");
-                StringBuilder names = new StringBuilder();
-                for (Category cat : categories) {
-                    if (names.length() > 0) names.append(", ");
-                    names.append(cat.getName());
-                }
-                context.append(names).append("\n\n");
-            }
-        } catch (Exception e) {
-            log.warn("获取分类列表失败", e);
-        }
-
-        // 热销商品
-        try {
-            List<Product> hotProducts = productMapper.findHotProducts(8);
-            if (hotProducts != null && !hotProducts.isEmpty()) {
-                context.append("## 热销商品\n");
-                for (int i = 0; i < hotProducts.size(); i++) {
-                    Product p = hotProducts.get(i);
-                    context.append(String.format("%d. [ID:%d] %s - ¥%s/%s - 产地:%s - 已售%d\n",
-                            i + 1, p.getId(), p.getName(),
-                            p.getPrice() != null ? p.getPrice().toPlainString() : "暂无",
-                            p.getUnit() != null ? p.getUnit() : "份",
-                            p.getOrigin() != null ? p.getOrigin() : "未知",
-                            p.getSales() != null ? p.getSales() : 0));
-                }
-                context.append("\n");
-            }
-        } catch (Exception e) {
-            log.warn("获取热销商品失败", e);
-        }
-
-        // 与用户提问相关的商品搜索
-        if (userMessage != null && userMessage.length() >= 2) {
-            try {
-                List<Product> relatedProducts = productMapper.searchProducts(
-                        userMessage, null, null, null, "sales", 5, 0);
-                if (relatedProducts != null && !relatedProducts.isEmpty()) {
-                    context.append("## 与用户提问相关的商品\n");
-                    for (int i = 0; i < relatedProducts.size(); i++) {
-                        Product p = relatedProducts.get(i);
-                        String desc = p.getDescription() != null && p.getDescription().length() > 50
-                                ? p.getDescription().substring(0, 50) + "..."
-                                : (p.getDescription() != null ? p.getDescription() : "");
-                        context.append(String.format("%d. [ID:%d] %s - ¥%s/%s - 产地:%s - 已售%d - %s\n",
-                                i + 1, p.getId(), p.getName(),
-                                p.getPrice() != null ? p.getPrice().toPlainString() : "暂无",
-                                p.getUnit() != null ? p.getUnit() : "份",
-                                p.getOrigin() != null ? p.getOrigin() : "未知",
-                                p.getSales() != null ? p.getSales() : 0,
-                                desc));
-                    }
-                    context.append("\n");
-                }
-            } catch (Exception e) {
-                log.warn("搜索相关商品失败", e);
-            }
-        }
-
-        // 用户偏好（已登录时）
-        if (userId != null) {
-            try {
-                // 最近订单
-                List<Order> orders = orderMapper.findByUserId(userId);
-                if (orders != null && !orders.isEmpty()) {
-                    context.append("## 用户偏好\n");
-                    context.append("最近购买: ");
-                    List<String> boughtNames = new ArrayList<>();
-                    int orderCount = 0;
-                    for (Order order : orders) {
-                        if (orderCount >= 3) break;
-                        List<OrderItem> items = orderItemMapper.findByOrderId(order.getId());
-                        if (items != null) {
-                            for (OrderItem item : items) {
-                                boughtNames.add(item.getProductName());
-                            }
-                        }
-                        orderCount++;
-                    }
-                    context.append(String.join(", ", boughtNames)).append("\n");
-
-                    // 收藏商品
-                    List<Favorite> favorites = favoriteMapper.findByUserId(userId);
-                    if (favorites != null && !favorites.isEmpty()) {
-                        List<String> favNames = new ArrayList<>();
-                        int favCount = 0;
-                        for (Favorite fav : favorites) {
-                            if (favCount >= 5) break;
-                            favNames.add(fav.getProductName());
-                            favCount++;
-                        }
-                        context.append("收藏商品: ").append(String.join(", ", favNames)).append("\n");
-                    }
-                    context.append("\n");
-                }
-            } catch (Exception e) {
-                log.warn("获取用户偏好失败", e);
-            }
-        }
+        appendCategoryContext(context);
+        appendHotProductContext(context);
+        appendRelatedProductContext(context, userMessage);
+        appendUserPreferenceContext(context, userId);
 
         return context.toString();
     }
 
-    /**
-     * 构建 system prompt
-     */
-    private String buildSystemPrompt(String productContext) {
-        return "你是\"助农商城\"的智能购物助手 🌿\n" +
-                "\n" +
-                "## 你的能力\n" +
-                "- 根据用户需求推荐合适的农产品\n" +
-                "- 比较不同商品的价格、产地、销量\n" +
-                "- 提供农产品选购建议（如季节性、产地特点、营养价值）\n" +
-                "- 回答关于商品分类、价格区间的问题\n" +
-                "\n" +
-                "## 回答格式规范（重要！必须遵守）\n" +
-                "1. 使用 **Markdown** 格式回复，让内容结构清晰、美观\n" +
-                "2. 使用 `###` 小标题分隔不同推荐类别或话题\n" +
-                "3. 使用 **加粗** 突出商品名称、价格等关键信息\n" +
-                "4. 使用无序列表 `- ` 或有序列表 `1. ` 来列举推荐商品\n" +
-                "5. 推荐商品时**必须**使用以下格式（前端会渲染为可点击卡片）：\n" +
-                "   [商品:商品名称:商品ID]\n" +
-                "   例如：**[商品:有机红富士苹果:5]** — 山东烟台直供，口感脆甜！\n" +
-                "6. 每次推荐不超过 3-5 个商品，每个商品说明推荐理由\n" +
-                "7. 绝对不要编造不存在的商品，只推荐下方提供的商品列表中的商品\n" +
-                "8. 如果用户的问题与购物无关，礼貌引导回购物话题\n" +
-                "9. 如果没有合适的商品，诚实告知并建议替代方案\n" +
-                "\n" +
-                "## 回复示例\n" +
-                "### 🔥 热销水果推荐\n" +
-                "为你精选了几款热门水果：\n" +
-                "\n" +
-                "- **[商品:有机红富士苹果:5]** — 产地山东烟台，脆甜多汁，已售238份\n" +
-                "- **[商品:云南蓝莓:8]** — 新鲜采摘，颗颗饱满，富含花青素\n" +
-                "\n" +
-                "> 💡 小贴士：现在的时令水果品质最好，建议优先选择当季产品哦！\n" +
-                "\n" +
-                productContext;
+    private void appendCategoryContext(StringBuilder context) {
+        try {
+            List<Category> categories = categoryMapper.findAll();
+            if (categories == null || categories.isEmpty()) {
+                return;
+            }
+
+            context.append("## 商城分类\n");
+            List<String> categoryNames = new ArrayList<>();
+            for (Category category : categories) {
+                categoryNames.add(category.getName());
+            }
+            context.append(String.join(", ", categoryNames)).append("\n\n");
+        } catch (Exception e) {
+            log.warn("获取分类列表失败", e);
+        }
     }
 
-    /**
-     * 调用 DeepSeek API
-     */
+    private void appendHotProductContext(StringBuilder context) {
+        try {
+            List<Product> hotProducts = productMapper.findHotProducts(8);
+            if (hotProducts == null || hotProducts.isEmpty()) {
+                return;
+            }
+
+            context.append("## 热销商品\n");
+            appendProductLines(context, hotProducts);
+            context.append("\n");
+        } catch (Exception e) {
+            log.warn("获取热销商品失败", e);
+        }
+    }
+
+    private void appendRelatedProductContext(StringBuilder context, String userMessage) {
+        if (userMessage == null || userMessage.length() < 2) {
+            return;
+        }
+
+        try {
+            List<Product> relatedProducts = productMapper.searchProducts(
+                    userMessage, null, null, null, "sales", 5, 0);
+            if (relatedProducts == null || relatedProducts.isEmpty()) {
+                return;
+            }
+
+            context.append("## 与用户问题相关的商品\n");
+            appendProductLines(context, relatedProducts);
+            context.append("\n");
+        } catch (Exception e) {
+            log.warn("搜索相关商品失败", e);
+        }
+    }
+
+    private void appendUserPreferenceContext(StringBuilder context, Long userId) {
+        if (userId == null) {
+            return;
+        }
+
+        try {
+            List<Order> orders = orderMapper.findByUserId(userId);
+            if (orders == null || orders.isEmpty()) {
+                return;
+            }
+
+            context.append("## 用户偏好\n");
+            appendRecentOrderItems(context, orders);
+            appendFavoriteProducts(context, userId);
+            context.append("\n");
+        } catch (Exception e) {
+            log.warn("获取用户偏好失败", e);
+        }
+    }
+
+    private void appendRecentOrderItems(StringBuilder context, List<Order> orders) {
+        List<String> boughtNames = new ArrayList<>();
+        int orderCount = 0;
+        for (Order order : orders) {
+            if (orderCount >= 3) {
+                break;
+            }
+            List<OrderItem> items = orderItemMapper.findByOrderId(order.getId());
+            if (items != null) {
+                for (OrderItem item : items) {
+                    boughtNames.add(item.getProductName());
+                }
+            }
+            orderCount++;
+        }
+
+        if (!boughtNames.isEmpty()) {
+            context.append("最近购买: ").append(String.join(", ", boughtNames)).append("\n");
+        }
+    }
+
+    private void appendFavoriteProducts(StringBuilder context, Long userId) {
+        List<Favorite> favorites = favoriteMapper.findByUserId(userId);
+        if (favorites == null || favorites.isEmpty()) {
+            return;
+        }
+
+        List<String> favoriteNames = new ArrayList<>();
+        int favoriteCount = 0;
+        for (Favorite favorite : favorites) {
+            if (favoriteCount >= 5) {
+                break;
+            }
+            favoriteNames.add(favorite.getProductName());
+            favoriteCount++;
+        }
+
+        if (!favoriteNames.isEmpty()) {
+            context.append("收藏商品: ").append(String.join(", ", favoriteNames)).append("\n");
+        }
+    }
+
+    private void appendProductLines(StringBuilder context, List<Product> products) {
+        for (int i = 0; i < products.size(); i++) {
+            Product product = products.get(i);
+            context.append(String.format("%d. [ID:%d] %s - ￥%s/%s - 产地:%s - 已售%d - %s\n",
+                    i + 1,
+                    product.getId(),
+                    product.getName(),
+                    product.getPrice() != null ? product.getPrice().toPlainString() : "暂无",
+                    product.getUnit() != null ? product.getUnit() : "件",
+                    product.getOrigin() != null ? product.getOrigin() : "未知",
+                    product.getSales() != null ? product.getSales() : 0,
+                    truncateDescription(product.getDescription())));
+        }
+    }
+
+    private String truncateDescription(String description) {
+        if (description == null) {
+            return "";
+        }
+        return description.length() > 50 ? description.substring(0, 50) + "..." : description;
+    }
+
+    private String buildSystemPrompt(String productContext) {
+        return """
+                你是“助农商城”的智能购物助手。
+
+                ## 你的任务
+                - 根据用户需求推荐合适的农产品。
+                - 比较不同商品的价格、产地、销量和适用场景。
+                - 提供农产品选购建议，例如季节性、产地特点、储存方式和搭配建议。
+                - 用户问题与购物无关时，礼貌引导回农产品选购主题。
+
+                ## 回答规范
+                1. 使用 Markdown，让内容结构清楚。
+                2. 推荐商品时必须使用格式：[商品:商品名称:商品ID]，前端会把它渲染为可点击商品卡片。
+                3. 每次最多推荐 3-5 个商品，并说明推荐理由。
+                4. 只能推荐下方商品上下文中真实存在的商品，不要编造不存在的商品。
+                5. 没有合适商品时，直接说明原因，并给出替代搜索建议。
+
+                ## 商品上下文
+                %s
+                """.formatted(productContext);
+    }
+
     private String callDeepSeekApi(List<Map<String, String>> messages) throws Exception {
-        // 构建请求体
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", properties.getModel());
         requestBody.put("max_tokens", properties.getMaxTokens());
@@ -256,7 +275,6 @@ public class AiServiceImpl implements AiService {
 
         String jsonBody = objectMapper.writeValueAsString(requestBody);
 
-        // 构建HTTP请求
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(properties.getBaseUrl() + "/v1/chat/completions"))
                 .header("Content-Type", "application/json")
@@ -265,16 +283,12 @@ public class AiServiceImpl implements AiService {
                 .timeout(Duration.ofSeconds(properties.getTimeoutSeconds()))
                 .build();
 
-        // 发送请求
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        // 检查HTTP状态码
         if (response.statusCode() != 200) {
             log.error("DeepSeek API 返回错误: status={}, body={}", response.statusCode(), response.body());
             throw new RuntimeException("DeepSeek API 调用失败: HTTP " + response.statusCode());
         }
 
-        // 解析响应
         Map<String, Object> responseMap = objectMapper.readValue(
                 response.body(), new TypeReference<Map<String, Object>>() {});
 
@@ -291,6 +305,6 @@ public class AiServiceImpl implements AiService {
         }
 
         String content = (String) message.get("content");
-        return content != null ? content : "AI助手暂时无法回答，请稍后再试。";
+        return content != null ? content : "AI 助手暂时无法回答，请稍后再试。";
     }
 }

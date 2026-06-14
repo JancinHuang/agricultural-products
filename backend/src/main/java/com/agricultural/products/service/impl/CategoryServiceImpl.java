@@ -1,14 +1,14 @@
 package com.agricultural.products.service.impl;
 
+import com.agricultural.products.common.PageRequest;
+import com.agricultural.products.common.PageResult;
 import com.agricultural.products.entity.Category;
 import com.agricultural.products.mapper.CategoryMapper;
 import com.agricultural.products.service.CategoryService;
 import com.agricultural.products.service.ObjectStorageService;
 import com.agricultural.products.service.RedisCacheService;
-import com.agricultural.products.common.PageRequest;
-import com.agricultural.products.common.PageResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 /**
@@ -16,46 +16,50 @@ import java.util.List;
  */
 @Service
 public class CategoryServiceImpl implements CategoryService {
-    
-    @Autowired
-    private CategoryMapper categoryMapper;
 
-    @Autowired
-    private RedisCacheService redisCacheService;
+    private final CategoryMapper categoryMapper;
+    private final RedisCacheService redisCacheService;
+    private final ObjectStorageService objectStorageService;
 
-    @Autowired
-    private ObjectStorageService objectStorageService;
-    
+    public CategoryServiceImpl(
+            CategoryMapper categoryMapper,
+            RedisCacheService redisCacheService,
+            ObjectStorageService objectStorageService) {
+        this.categoryMapper = categoryMapper;
+        this.redisCacheService = redisCacheService;
+        this.objectStorageService = objectStorageService;
+    }
+
     @Override
     public Category findById(Long id) {
         return signCategoryIcon(categoryMapper.findById(id));
     }
-    
+
     @Override
     public List<Category> findAll() {
         List<Category> categories = redisCacheService.getCategoryList()
-            .orElseGet(() -> {
-                List<Category> rawCategories = categoryMapper.findAll();
-                redisCacheService.setCategoryList(rawCategories);
-                return rawCategories;
-            });
+                .orElseGet(() -> {
+                    List<Category> rawCategories = categoryMapper.findAll();
+                    redisCacheService.setCategoryList(rawCategories);
+                    return rawCategories;
+                });
         return signCategoryIcons(categories);
     }
-    
+
     @Override
     public PageResult<Category> findByPage(PageRequest request) {
         List<Category> list = categoryMapper.findByPage(request);
-        Long total = request.getKeyword() != null && !request.getKeyword().isEmpty() 
-            ? categoryMapper.countByKeyword(request.getKeyword()) 
-            : categoryMapper.count();
+        Long total = request.getKeyword() != null && !request.getKeyword().isEmpty()
+                ? categoryMapper.countByKeyword(request.getKeyword())
+                : categoryMapper.count();
         return new PageResult<>(signCategoryIcons(list), total, request.getPageNum(), request.getPageSize());
     }
-    
+
     @Override
     public Long count() {
         return categoryMapper.count();
     }
-    
+
     @Override
     public boolean save(Category category) {
         if (category.getSort() == null) {
@@ -70,7 +74,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         return success;
     }
-    
+
     @Override
     public boolean update(Category category) {
         boolean success = categoryMapper.update(category) > 0;
@@ -79,7 +83,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         return success;
     }
-    
+
     @Override
     public boolean deleteById(Long id) {
         boolean success = categoryMapper.deleteById(id) > 0;

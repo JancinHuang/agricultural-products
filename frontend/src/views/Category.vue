@@ -86,7 +86,7 @@
               :show-file-list="false"
               :before-upload="beforeUpload"
               :http-request="handleUpload"
-              accept="image/*"
+              :accept="ALLOWED_IMAGE_ACCEPT"
             >
               <div class="upload-trigger">
                 <img v-if="form.icon || iconPreviewUrl" :src="iconPreviewUrl || getIconUrl(form.icon)" class="upload-preview" />
@@ -132,6 +132,7 @@ import { getCategoryPage, addCategory, updateCategory, deleteCategory } from '@/
 import { uploadFile } from '@/api/upload'
 import { formatTime } from '@/utils/time'
 import { imageUtils } from '@/utils/imageUtils'
+import { ALLOWED_IMAGE_ACCEPT, allowedImageMessage, isAllowedImageFile } from '@/utils/uploadValidation'
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -297,11 +298,11 @@ const revokeLocalIconPreview = () => {
 }
 
 const beforeUpload = (file) => {
-  const isImage = file.type ? file.type.startsWith('image/') : /\.(png|jpe?g|gif|webp|bmp)$/i.test(file.name)
+  const isImage = isAllowedImageFile(file)
   const isLt2M = file.size / 1024 / 1024 < 2
 
   if (!isImage) {
-    ElMessage.error('只能上传图片文件')
+    ElMessage.error(allowedImageMessage)
     return false
   }
   if (!isLt2M) {

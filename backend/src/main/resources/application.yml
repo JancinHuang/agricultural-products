@@ -28,10 +28,7 @@ mybatis:
 
 jwt:
   secret: ${JWT_SECRET:please-change-this-jwt-secret-in-local-env}
-  expiration: 86400000
-
-file:
-  upload-path: D:/
+  expiration: 3600000
 
 storage:
   zos:

@@ -2,7 +2,6 @@ package com.agricultural.products.controller;
 
 import com.agricultural.products.common.Result;
 import com.agricultural.products.service.ObjectStorageService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,15 +12,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * File upload controller backed by private CTYun ZOS object storage.
- */
 @RestController
 @RequestMapping("/api/upload")
 public class UploadController {
 
-    @Autowired
-    private ObjectStorageService objectStorageService;
+    private final ObjectStorageService objectStorageService;
+
+    public UploadController(ObjectStorageService objectStorageService) {
+        this.objectStorageService = objectStorageService;
+    }
 
     @PostMapping
     public Result<Map<String, String>> upload(@RequestParam("file") MultipartFile file) {
@@ -36,10 +35,9 @@ public class UploadController {
             data.put("filename", uploadResult.filename());
             return Result.success("上传成功", data);
         } catch (IOException e) {
-            e.printStackTrace();
             return Result.error("上传失败: " + e.getMessage());
-        } catch (IllegalStateException e) {
-            return Result.error(e.getMessage());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return Result.error(400, e.getMessage());
         }
     }
 }

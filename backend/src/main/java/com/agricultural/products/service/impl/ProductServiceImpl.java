@@ -1,14 +1,14 @@
 package com.agricultural.products.service.impl;
 
-import com.agricultural.products.entity.Product;
-import com.agricultural.products.mapper.ProductMapper;
-import com.agricultural.products.service.ProductService;
-import com.agricultural.products.service.RedisCacheService;
-import com.agricultural.products.service.ObjectStorageService;
 import com.agricultural.products.common.PageRequest;
 import com.agricultural.products.common.PageResult;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.agricultural.products.entity.Product;
+import com.agricultural.products.mapper.ProductMapper;
+import com.agricultural.products.service.ObjectStorageService;
+import com.agricultural.products.service.ProductService;
+import com.agricultural.products.service.RedisCacheService;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -19,43 +19,47 @@ import java.util.Map;
  */
 @Service
 public class ProductServiceImpl implements ProductService {
-    
-    @Autowired
-    private ProductMapper productMapper;
 
-    @Autowired
-    private RedisCacheService redisCacheService;
+    private final ProductMapper productMapper;
+    private final RedisCacheService redisCacheService;
+    private final ObjectStorageService objectStorageService;
 
-    @Autowired
-    private ObjectStorageService objectStorageService;
-    
+    public ProductServiceImpl(
+            ProductMapper productMapper,
+            RedisCacheService redisCacheService,
+            ObjectStorageService objectStorageService) {
+        this.productMapper = productMapper;
+        this.redisCacheService = redisCacheService;
+        this.objectStorageService = objectStorageService;
+    }
+
     @Override
     public Product findById(Long id) {
         return signProductImage(productMapper.findById(id));
     }
-    
+
     @Override
     public List<Product> findHotProducts(int limit) {
         List<Product> products = redisCacheService.getHotProducts(limit)
-            .orElseGet(() -> {
-                List<Product> rawProducts = productMapper.findHotProducts(limit);
-                redisCacheService.setHotProducts(limit, rawProducts);
-                return rawProducts;
-            });
+                .orElseGet(() -> {
+                    List<Product> rawProducts = productMapper.findHotProducts(limit);
+                    redisCacheService.setHotProducts(limit, rawProducts);
+                    return rawProducts;
+                });
         return signProductImages(products);
     }
-    
+
     @Override
     public List<Product> findByCategoryId(Long categoryId) {
         return signProductImages(productMapper.findByCategoryId(categoryId));
     }
-    
+
     @Override
     public PageResult<Product> findByPage(PageRequest request) {
         List<Product> list = productMapper.findByPage(request);
-        Long total = request.getKeyword() != null && !request.getKeyword().isEmpty() 
-            ? productMapper.countByKeyword(request.getKeyword()) 
-            : productMapper.count();
+        Long total = request.getKeyword() != null && !request.getKeyword().isEmpty()
+                ? productMapper.countByKeyword(request.getKeyword())
+                : productMapper.count();
         return new PageResult<>(signProductImages(list), total, request.getPageNum(), request.getPageSize());
     }
 
@@ -73,12 +77,12 @@ public class ProductServiceImpl implements ProductService {
         result.put("pageSize", pageSize);
         return result;
     }
-    
+
     @Override
     public Long count() {
         return productMapper.count();
     }
-    
+
     @Override
     public boolean save(Product product) {
         if (product.getSales() == null) {
@@ -93,7 +97,7 @@ public class ProductServiceImpl implements ProductService {
         }
         return success;
     }
-    
+
     @Override
     public boolean update(Product product) {
         boolean success = productMapper.update(product) > 0;
@@ -102,7 +106,7 @@ public class ProductServiceImpl implements ProductService {
         }
         return success;
     }
-    
+
     @Override
     public boolean deleteById(Long id) {
         boolean success = productMapper.deleteById(id) > 0;

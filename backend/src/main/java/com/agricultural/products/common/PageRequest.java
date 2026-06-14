@@ -14,6 +14,16 @@ public class PageRequest {
     private Integer status;
     
     public Integer getOffset() {
-        return (pageNum - 1) * pageSize;
+        int safePageNum = pageNum == null || pageNum < 1 ? 1 : pageNum;
+        int safePageSize = pageSize == null || pageSize < 1 ? 10 : Math.min(pageSize, 100);
+        return (safePageNum - 1) * safePageSize;
+    }
+
+    public Integer getPageNum() {
+        return pageNum == null || pageNum < 1 ? 1 : pageNum;
+    }
+
+    public Integer getPageSize() {
+        return pageSize == null || pageSize < 1 ? 10 : Math.min(pageSize, 100);
     }
 }

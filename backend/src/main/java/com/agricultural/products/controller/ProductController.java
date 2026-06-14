@@ -6,11 +6,19 @@ import com.agricultural.products.common.Result;
 import com.agricultural.products.common.SecurityUtils;
 import com.agricultural.products.entity.Product;
 import com.agricultural.products.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.math.BigDecimal;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 产品控制器 - 农产品管理
@@ -18,30 +26,33 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/product")
 public class ProductController {
-    
-    @Autowired
-    private ProductService productService;
-    
+
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
     @GetMapping("/hot")
     public Result<List<Product>> hotProducts(@RequestParam(defaultValue = "8") int limit) {
         return Result.success(productService.findHotProducts(limit));
     }
-    
+
     @GetMapping("/category/{categoryId}")
     public Result<List<Product>> byCategory(@PathVariable Long categoryId) {
         return Result.success(productService.findByCategoryId(categoryId));
     }
-    
+
     @GetMapping("/page")
     public Result<PageResult<Product>> page(PageRequest request) {
         return Result.success(productService.findByPage(request));
     }
-    
+
     @GetMapping("/{id}")
     public Result<Product> getById(@PathVariable Long id) {
         return Result.success(productService.findById(id));
     }
-    
+
     @PostMapping
     public Result<String> save(@RequestBody Product product) {
         if (!SecurityUtils.isAdmin()) {
@@ -68,12 +79,12 @@ public class ProductController {
         boolean success = productService.deleteById(id);
         return success ? Result.success("删除成功") : Result.error("删除失败");
     }
-    
+
     @GetMapping("/count")
     public Result<Long> count() {
         return Result.success(productService.count());
     }
-    
+
     @GetMapping("/search")
     public Result<Map<String, Object>> search(
             @RequestParam(required = false) String keyword,
@@ -83,7 +94,6 @@ public class ProductController {
             @RequestParam(required = false, defaultValue = "create_time") String orderBy,
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "12") int pageSize) {
-        
         return Result.success(productService.search(keyword, categoryId, minPrice, maxPrice, orderBy, pageNum, pageSize));
     }
 }

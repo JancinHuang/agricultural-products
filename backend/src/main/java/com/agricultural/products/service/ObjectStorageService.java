@@ -13,12 +13,22 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class ObjectStorageService {
 
     private static final String DEFAULT_DIRECTORY = "products";
+    private static final Map<String, String> ALLOWED_EXTENSIONS = Map.of(
+            ".jpg", "image/jpeg",
+            ".jpeg", "image/jpeg",
+            ".png", "image/png",
+            ".gif", "image/gif",
+            ".webp", "image/webp"
+    );
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.copyOf(ALLOWED_EXTENSIONS.values());
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
@@ -32,6 +42,7 @@ public class ObjectStorageService {
 
     public UploadResult upload(MultipartFile file) throws IOException {
         ensureConfigured();
+        validateImageFile(file);
         String objectKey = buildObjectKey(file.getOriginalFilename());
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(properties.getBucket())
@@ -65,10 +76,7 @@ public class ObjectStorageService {
     }
 
     private String buildObjectKey(String originalFilename) {
-        String extension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
-        }
+        String extension = extractExtension(originalFilename);
         String datePath = LocalDate.now().toString().replace("-", "/");
         return DEFAULT_DIRECTORY + "/" + datePath + "/" + UUID.randomUUID().toString().replace("-", "") + extension;
     }
@@ -79,13 +87,38 @@ public class ObjectStorageService {
                 : file.getContentType();
     }
 
+    private void validateImageFile(MultipartFile file) {
+        String extension = extractExtension(file.getOriginalFilename());
+        if (!ALLOWED_EXTENSIONS.containsKey(extension)) {
+            throw new IllegalArgumentException("仅支持 jpg、jpeg、png、gif、webp 图片格式");
+        }
+
+        String contentType = resolveContentType(file).toLowerCase();
+        if (!ALLOWED_CONTENT_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("文件类型不正确，请上传图片文件");
+        }
+    }
+
+    private String extractExtension(String originalFilename) {
+        if (originalFilename == null || originalFilename.isBlank()) {
+            return "";
+        }
+        String filename = originalFilename.replace("\\", "/");
+        filename = filename.substring(filename.lastIndexOf('/') + 1);
+        int dotIndex = filename.lastIndexOf('.');
+        if (dotIndex < 0 || dotIndex == filename.length() - 1) {
+            return "";
+        }
+        return filename.substring(dotIndex).toLowerCase();
+    }
+
     private String extractFilename(String objectKey) {
         int index = objectKey.lastIndexOf('/');
         return index >= 0 ? objectKey.substring(index + 1) : objectKey;
     }
 
     private boolean isAlreadyAccessible(String image) {
-        return image.startsWith("http://") || image.startsWith("https://") || image.startsWith("/upload/");
+        return image.startsWith("http://") || image.startsWith("https://");
     }
 
     private void ensureConfigured() {

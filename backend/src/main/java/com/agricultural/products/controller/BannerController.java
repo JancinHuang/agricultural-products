@@ -5,10 +5,15 @@ import com.agricultural.products.common.PageResult;
 import com.agricultural.products.common.Result;
 import com.agricultural.products.common.SecurityUtils;
 import com.agricultural.products.entity.Banner;
-import com.agricultural.products.mapper.BannerMapper;
-import com.agricultural.products.service.ObjectStorageService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import com.agricultural.products.service.BannerService;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -16,27 +21,25 @@ import java.util.List;
 @RequestMapping("/api/banner")
 public class BannerController {
 
-    @Autowired
-    private BannerMapper bannerMapper;
+    private final BannerService bannerService;
 
-    @Autowired
-    private ObjectStorageService objectStorageService;
+    public BannerController(BannerService bannerService) {
+        this.bannerService = bannerService;
+    }
 
     @GetMapping("/list")
     public Result<List<Banner>> list() {
-        return Result.success(signImages(bannerMapper.findEnabled()));
+        return Result.success(bannerService.listEnabled());
     }
 
     @GetMapping("/page")
     public Result<PageResult<Banner>> page(PageRequest request) {
-        List<Banner> list = signImages(bannerMapper.findByPage(request));
-        Long total = bannerMapper.countByPage(request);
-        return Result.success(new PageResult<>(list, total, request.getPageNum(), request.getPageSize()));
+        return Result.success(bannerService.findByPage(request));
     }
 
     @GetMapping("/{id}")
     public Result<Banner> getById(@PathVariable Long id) {
-        return Result.success(signImage(bannerMapper.findById(id)));
+        return Result.success(bannerService.findById(id));
     }
 
     @PostMapping
@@ -44,8 +47,7 @@ public class BannerController {
         if (!SecurityUtils.isAdmin()) {
             return Result.error("无权限操作");
         }
-        fillDefaults(banner);
-        return bannerMapper.insert(banner) > 0 ? Result.success("添加成功") : Result.error("添加失败");
+        return bannerService.save(banner) ? Result.success("添加成功") : Result.error("添加失败");
     }
 
     @PutMapping
@@ -53,7 +55,7 @@ public class BannerController {
         if (!SecurityUtils.isAdmin()) {
             return Result.error("无权限操作");
         }
-        return bannerMapper.update(banner) > 0 ? Result.success("更新成功") : Result.error("更新失败");
+        return bannerService.update(banner) ? Result.success("更新成功") : Result.error("更新失败");
     }
 
     @DeleteMapping("/{id}")
@@ -61,31 +63,6 @@ public class BannerController {
         if (!SecurityUtils.isAdmin()) {
             return Result.error("无权限操作");
         }
-        return bannerMapper.deleteById(id) > 0 ? Result.success("删除成功") : Result.error("删除失败");
-    }
-
-    private void fillDefaults(Banner banner) {
-        if (banner.getSort() == null) {
-            banner.setSort(0);
-        }
-        if (banner.getStatus() == null) {
-            banner.setStatus(1);
-        }
-    }
-
-    private List<Banner> signImages(List<Banner> banners) {
-        if (banners == null) {
-            return null;
-        }
-        banners.forEach(this::signImage);
-        return banners;
-    }
-
-    private Banner signImage(Banner banner) {
-        if (banner == null) {
-            return null;
-        }
-        banner.setImageUrl(objectStorageService.toAccessibleUrl(banner.getImage()));
-        return banner;
+        return bannerService.deleteById(id) ? Result.success("删除成功") : Result.error("删除失败");
     }
 }

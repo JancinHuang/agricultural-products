@@ -188,7 +188,7 @@
             :on-error="handleUploadError"
             :on-remove="handleUploadRemove"
             :on-preview="handlePreview"
-            accept="image/*"
+            :accept="ALLOWED_IMAGE_ACCEPT"
             :limit="5"
           >
             <el-icon><Plus /></el-icon>
@@ -229,6 +229,7 @@ import { addToFavorite, removeFromFavorite, checkFavorite } from '@/api/favorite
 import { getProductReviews, addReview, replyReview, updateReview, deleteReview as deleteReviewApi, toggleReviewLike, getReviewStats, canReviewProduct } from '@/api/review'
 import { formatTime } from '@/utils/time'
 import { imageUtils } from '@/utils/imageUtils'
+import { ALLOWED_IMAGE_ACCEPT, allowedImageMessage, isAllowedImageFile } from '@/utils/uploadValidation'
 import { useUserStore } from '@/store/user'
 import { useCartStore } from '@/store/cart'
 
@@ -486,11 +487,11 @@ const showReplyDialog = (review) => {
 }
 
 const beforeReviewImageUpload = (file) => {
-  const isImage = file.type ? file.type.startsWith('image/') : /\.(png|jpe?g|gif|webp|bmp)$/i.test(file.name)
+  const isImage = isAllowedImageFile(file)
   const isLt5M = file.size / 1024 / 1024 <= 5
 
   if (!isImage) {
-    ElMessage.error('只能上传图片文件')
+    ElMessage.error(allowedImageMessage)
     return false
   }
   if (!isLt5M) {
