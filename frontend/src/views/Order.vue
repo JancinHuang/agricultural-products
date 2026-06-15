@@ -1,6 +1,11 @@
 <template>
-  <AdminCrudPage title="订单列表">
-    <AdminSearchForm :model="searchForm" @search="handleSearch" @reset="handleReset">
+  <AdminCrudShell
+    title="订单列表"
+    :search-model="searchForm"
+    @search="handleSearch"
+    @reset="handleReset"
+  >
+    <template #search>
       <BaseFormItem label="关键词">
         <BaseInput v-model="searchForm.keyword" placeholder="订单编号" clearable @keyup.enter="handleSearch" />
       </BaseFormItem>
@@ -14,9 +19,17 @@
           />
         </BaseSelect>
       </BaseFormItem>
-    </AdminSearchForm>
+    </template>
 
-    <BaseTable :data="tableData" v-loading="loading" stripe>
+    <AdminDataTable
+      v-model:current-page="pageNum"
+      v-model:page-size="pageSize"
+      :data="tableData"
+      :loading="loading"
+      :total="total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    >
       <BaseTableColumn prop="id" label="ID" width="80" />
       <BaseTableColumn prop="orderNo" label="订单编号" min-width="180" show-overflow-tooltip />
       <BaseTableColumn prop="userName" label="用户" width="120" />
@@ -53,33 +66,23 @@
           </BaseTableActions>
         </template>
       </BaseTableColumn>
-    </BaseTable>
-
-    <BasePagination
-      v-model:current-page="pageNum"
-      v-model:page-size="pageSize"
-      :total="total"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    />
+    </AdminDataTable>
 
     <OrderDetailDialog v-model="dialogVisible" :detail="orderDetailResponse" />
-  </AdminCrudPage>
+  </AdminCrudShell>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import AdminCrudPage from '@/components/admin/AdminCrudPage.vue'
-import AdminSearchForm from '@/components/admin/AdminSearchForm.vue'
+import AdminCrudShell from '@/components/admin/AdminCrudShell.vue'
+import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import OrderDetailDialog from '@/components/admin/OrderDetailDialog.vue'
-import BasePagination from '@/components/base/BasePagination.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseFormItem from '@/components/base/BaseFormItem.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseOption from '@/components/base/BaseOption.vue'
 import BaseSelect from '@/components/base/BaseSelect.vue'
 import BaseTableActions from '@/components/base/BaseTableActions.vue'
-import BaseTable from '@/components/base/BaseTable.vue'
 import BaseTableColumn from '@/components/base/BaseTableColumn.vue'
 import StatusTag from '@/components/base/StatusTag.vue'
 import PriceText from '@/components/base/PriceText.vue'

@@ -1,5 +1,10 @@
 <template>
-  <BasePage title="产品列表">
+  <AdminCrudShell
+    title="产品列表"
+    :search-model="searchForm"
+    @search="handleSearch"
+    @reset="handleReset"
+  >
     <template #actions>
       <BaseButton type="primary" @click="openCreateProduct">
         <el-icon><Plus /></el-icon>
@@ -7,7 +12,7 @@
       </BaseButton>
     </template>
 
-    <BaseToolbar :model="searchForm" @search="handleSearch" @reset="handleReset">
+    <template #search>
       <BaseFormItem label="关键词">
         <BaseInput v-model="searchForm.keyword" placeholder="产品名称" clearable @keyup.enter="handleSearch" />
       </BaseFormItem>
@@ -21,9 +26,17 @@
           <BaseOption v-for="item in PRODUCT_STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
         </BaseSelect>
       </BaseFormItem>
-    </BaseToolbar>
+    </template>
 
-    <BaseTable :data="tableData" v-loading="loading" stripe>
+    <AdminDataTable
+      v-model:current-page="pageNum"
+      v-model:page-size="pageSize"
+      :data="tableData"
+      :loading="loading"
+      :total="total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    >
       <BaseTableColumn prop="id" label="ID" width="70" />
       <BaseTableColumn label="图片" width="86">
         <template #default="{ row }">
@@ -63,15 +76,7 @@
           <BaseTableActions @edit="openEditProduct(row)" @delete="deleteProductRow(row)" />
         </template>
       </BaseTableColumn>
-    </BaseTable>
-
-    <BasePagination
-      v-model:current-page="pageNum"
-      v-model:page-size="pageSize"
-      :total="total"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    />
+    </AdminDataTable>
 
     <BaseDialogForm
       v-model="dialogVisible"
@@ -90,7 +95,7 @@
     </BaseDialogForm>
 
     <BaseImagePreview v-model="previewVisible" :src="previewUrl" title="图片预览" />
-  </BasePage>
+  </AdminCrudShell>
 </template>
 
 <script setup>
@@ -102,32 +107,27 @@ import { formatTime } from '@/utils/time'
 import { PRODUCT_STATUS_OPTIONS } from '@/constants/status'
 import { normalizeProduct } from '@/services/domainAdapters'
 import { useCrudPage } from '@/composables/useCrudPage'
-import BasePage from '@/components/base/BasePage.vue'
+import { useDialogForm } from '@/composables/useDialogForm'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseFormItem from '@/components/base/BaseFormItem.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseOption from '@/components/base/BaseOption.vue'
 import BaseSelect from '@/components/base/BaseSelect.vue'
-import BaseToolbar from '@/components/base/BaseToolbar.vue'
-import BasePagination from '@/components/base/BasePagination.vue'
 import BaseTableActions from '@/components/base/BaseTableActions.vue'
-import BaseTable from '@/components/base/BaseTable.vue'
 import BaseTableColumn from '@/components/base/BaseTableColumn.vue'
 import BaseImagePreview from '@/components/base/BaseImagePreview.vue'
 import BaseDialogForm from '@/components/base/BaseDialogForm.vue'
 import StatusTag from '@/components/base/StatusTag.vue'
 import PriceText from '@/components/base/PriceText.vue'
+import AdminCrudShell from '@/components/admin/AdminCrudShell.vue'
+import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import ProductForm from '@/components/admin/ProductForm.vue'
 import { notify } from '@/services/uiFeedback'
 
 const categoryList = ref([])
-const dialogVisible = ref(false)
-const submitLoading = ref(false)
-const productFormRef = ref(null)
 const imagePreviewUrl = ref('')
 const previewVisible = ref(false)
 const previewUrl = ref('')
-const isEdit = ref(false)
 
 const defaultForm = () => ({
   id: null,
@@ -141,8 +141,6 @@ const defaultForm = () => ({
   image: '',
   status: 1
 })
-
-const form = ref(defaultForm())
 
 const {
   loading,
@@ -169,7 +167,36 @@ const {
   deleteMessage: '确定要删除该产品吗？'
 })
 
-const dialogTitle = ref('添加产品')
+const {
+  visible: dialogVisible,
+  submitLoading,
+  formRef: productFormRef,
+  form,
+  dialogTitle,
+  openCreate: openCreateDialog,
+  openEdit: openEditDialog,
+  submit: submitDialog
+} = useDialogForm({
+  defaults: defaultForm,
+  normalize: row => ({
+    id: row.id,
+    name: row.name,
+    categoryId: row.categoryId,
+    description: row.description,
+    price: row.price,
+    stock: row.stock,
+    unit: row.unit,
+    origin: row.origin,
+    image: row.image,
+    status: row.status
+  }),
+  submitCreate: addProduct,
+  submitUpdate: updateProduct,
+  title: {
+    create: '添加产品',
+    edit: '编辑产品'
+  }
+})
 
 const loadCategoryList = async () => {
   try {
@@ -181,58 +208,29 @@ const loadCategoryList = async () => {
 }
 
 const openCreateProduct = () => {
-  isEdit.value = false
-  dialogTitle.value = '添加产品'
   imagePreviewUrl.value = ''
-  form.value = defaultForm()
-  dialogVisible.value = true
+  openCreateDialog()
 }
 
 const openEditProduct = (row) => {
-  isEdit.value = true
-  dialogTitle.value = '编辑产品'
   imagePreviewUrl.value = row.imageUrl || ''
-  form.value = {
-    id: row.id,
-    name: row.name,
-    categoryId: row.categoryId,
-    description: row.description,
-    price: row.price,
-    stock: row.stock,
-    unit: row.unit,
-    origin: row.origin,
-    image: row.image,
-    status: row.status
-  }
-  dialogVisible.value = true
+  openEditDialog(row)
 }
 
 const handleImageUploaded = (result) => {
-  form.value.image = result.objectKey
+  form.image = result.objectKey
   imagePreviewUrl.value = result.url
   notify.success('上传成功')
 }
 
 const handleSubmit = async () => {
-  const valid = await productFormRef.value?.validate?.().catch(() => false)
-  if (!valid) return
-
-  submitLoading.value = true
   try {
-    const payload = { ...form.value }
-    if (isEdit.value) {
-      await updateProduct(payload)
-      notify.success('更新成功')
-    } else {
-      await addProduct(payload)
-      notify.success('添加成功')
-    }
-    dialogVisible.value = false
-    await loadData()
+    await submitDialog(null, async (payload, isEditMode) => {
+      notify.success(isEditMode ? '更新成功' : '添加成功')
+      await loadData()
+    })
   } catch (error) {
     console.error(error)
-  } finally {
-    submitLoading.value = false
   }
 }
 

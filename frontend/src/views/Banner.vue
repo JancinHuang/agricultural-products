@@ -1,5 +1,10 @@
 <template>
-  <BasePage title="轮播图列表">
+  <AdminCrudShell
+    title="轮播图列表"
+    :search-model="searchForm"
+    @search="handleSearch"
+    @reset="handleReset"
+  >
     <template #actions>
       <BaseButton type="primary" @click="openCreateBanner">
         <el-icon><Plus /></el-icon>
@@ -7,7 +12,7 @@
       </BaseButton>
     </template>
 
-    <BaseToolbar :model="searchForm" @search="handleSearch" @reset="handleReset">
+    <template #search>
       <BaseFormItem label="关键词">
         <BaseInput v-model="searchForm.keyword" placeholder="标题" clearable @keyup.enter="handleSearch" />
       </BaseFormItem>
@@ -16,9 +21,18 @@
           <BaseOption v-for="item in ENABLE_STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
         </BaseSelect>
       </BaseFormItem>
-    </BaseToolbar>
+    </template>
 
-    <BaseTable :data="tableData" v-loading="loading" stripe>
+    <AdminDataTable
+      v-model:current-page="pageNum"
+      v-model:page-size="pageSize"
+      :data="tableData"
+      :loading="loading"
+      :total="total"
+      :page-sizes="[10, 20, 50]"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    >
       <BaseTableColumn prop="id" label="ID" width="70" />
       <BaseTableColumn label="图片" width="150">
         <template #default="{ row }">
@@ -41,16 +55,7 @@
           <BaseTableActions @edit="openEditBanner(row)" @delete="deleteBannerRow(row)" />
         </template>
       </BaseTableColumn>
-    </BaseTable>
-
-    <BasePagination
-      v-model:current-page="pageNum"
-      v-model:page-size="pageSize"
-      :total="total"
-      :page-sizes="[10, 20, 50]"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    />
+    </AdminDataTable>
 
     <BaseDialogForm
       v-model="dialogVisible"
@@ -68,7 +73,7 @@
     </BaseDialogForm>
 
     <BaseImagePreview v-model="previewVisible" :src="previewUrl" title="图片预览" width="720px" />
-  </BasePage>
+  </AdminCrudShell>
 </template>
 
 <script setup>
@@ -78,31 +83,25 @@ import { getBannerPage, addBanner, updateBanner, deleteBanner } from '@/api/bann
 import { ENABLE_STATUS_OPTIONS } from '@/constants/status'
 import { normalizeBanner } from '@/services/domainAdapters'
 import { useCrudPage } from '@/composables/useCrudPage'
-import BasePage from '@/components/base/BasePage.vue'
+import { useDialogForm } from '@/composables/useDialogForm'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseFormItem from '@/components/base/BaseFormItem.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseOption from '@/components/base/BaseOption.vue'
 import BaseSelect from '@/components/base/BaseSelect.vue'
-import BaseToolbar from '@/components/base/BaseToolbar.vue'
-import BasePagination from '@/components/base/BasePagination.vue'
 import BaseTableActions from '@/components/base/BaseTableActions.vue'
-import BaseTable from '@/components/base/BaseTable.vue'
 import BaseTableColumn from '@/components/base/BaseTableColumn.vue'
 import BaseImagePreview from '@/components/base/BaseImagePreview.vue'
 import BaseDialogForm from '@/components/base/BaseDialogForm.vue'
 import StatusTag from '@/components/base/StatusTag.vue'
+import AdminCrudShell from '@/components/admin/AdminCrudShell.vue'
+import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import BannerForm from '@/components/admin/BannerForm.vue'
 import { notify } from '@/services/uiFeedback'
 
-const dialogVisible = ref(false)
-const submitLoading = ref(false)
-const bannerFormRef = ref(null)
 const imagePreviewUrl = ref('')
 const previewVisible = ref(false)
 const previewUrl = ref('')
-const isEdit = ref(false)
-const dialogTitle = ref('添加轮播图')
 
 const defaultForm = () => ({
   id: null,
@@ -114,8 +113,6 @@ const defaultForm = () => ({
   sort: 0,
   status: 1
 })
-
-const form = ref(defaultForm())
 
 const {
   loading,
@@ -141,19 +138,18 @@ const {
   deleteMessage: '确定要删除该轮播图吗？'
 })
 
-const openCreateBanner = () => {
-  isEdit.value = false
-  dialogTitle.value = '添加轮播图'
-  imagePreviewUrl.value = ''
-  form.value = defaultForm()
-  dialogVisible.value = true
-}
-
-const openEditBanner = (row) => {
-  isEdit.value = true
-  dialogTitle.value = '编辑轮播图'
-  imagePreviewUrl.value = row.imageUrl || ''
-  form.value = {
+const {
+  visible: dialogVisible,
+  submitLoading,
+  formRef: bannerFormRef,
+  form,
+  dialogTitle,
+  openCreate: openCreateDialog,
+  openEdit: openEditDialog,
+  submit: submitDialog
+} = useDialogForm({
+  defaults: defaultForm,
+  normalize: row => ({
     id: row.id,
     title: row.title,
     subtitle: row.subtitle,
@@ -162,35 +158,39 @@ const openEditBanner = (row) => {
     image: row.image,
     sort: row.sort,
     status: row.status
+  }),
+  submitCreate: addBanner,
+  submitUpdate: updateBanner,
+  title: {
+    create: '添加轮播图',
+    edit: '编辑轮播图'
   }
-  dialogVisible.value = true
+})
+
+const openCreateBanner = () => {
+  imagePreviewUrl.value = ''
+  openCreateDialog()
+}
+
+const openEditBanner = (row) => {
+  imagePreviewUrl.value = row.imageUrl || ''
+  openEditDialog(row)
 }
 
 const handleImageUploaded = (result) => {
-  form.value.image = result.objectKey
+  form.image = result.objectKey
   imagePreviewUrl.value = result.url
   notify.success('上传成功')
 }
 
 const handleSubmit = async () => {
-  const valid = await bannerFormRef.value?.validate?.().catch(() => false)
-  if (!valid) return
-
-  submitLoading.value = true
   try {
-    if (isEdit.value) {
-      await updateBanner({ ...form.value })
-      notify.success('更新成功')
-    } else {
-      await addBanner({ ...form.value })
-      notify.success('添加成功')
-    }
-    dialogVisible.value = false
-    await loadData()
+    await submitDialog(null, async (payload, isEditMode) => {
+      notify.success(isEditMode ? '更新成功' : '添加成功')
+      await loadData()
+    })
   } catch (error) {
     console.error(error)
-  } finally {
-    submitLoading.value = false
   }
 }
 

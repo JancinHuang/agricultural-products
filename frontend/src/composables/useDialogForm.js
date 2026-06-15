@@ -1,17 +1,28 @@
 import { computed, reactive, ref } from 'vue'
 
 export function useDialogForm(options) {
-  const { defaults, normalize = item => item, submitCreate, submitUpdate } = options
+  const {
+    defaults,
+    normalize = item => item,
+    submitCreate,
+    submitUpdate,
+    title = {
+      create: '添加',
+      edit: '编辑'
+    }
+  } = options
+
+  const getDefaults = () => (typeof defaults === 'function' ? defaults() : defaults)
 
   const visible = ref(false)
   const isEdit = ref(false)
   const submitLoading = ref(false)
   const formRef = ref(null)
-  const form = reactive({ ...defaults })
-  const dialogTitle = computed(() => (isEdit.value ? '编辑' : '添加'))
+  const form = reactive({ ...getDefaults() })
+  const dialogTitle = computed(() => (isEdit.value ? title.edit : title.create))
 
   const resetForm = (extra = {}) => {
-    Object.assign(form, defaults, extra)
+    Object.assign(form, getDefaults(), extra)
   }
 
   const openCreate = (extra = {}) => {

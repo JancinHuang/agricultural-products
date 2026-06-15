@@ -1,5 +1,10 @@
 <template>
-  <BasePage title="用户列表">
+  <AdminCrudShell
+    title="用户列表"
+    :search-model="searchForm"
+    @search="handleSearch"
+    @reset="handleReset"
+  >
     <template #actions>
       <BaseButton v-if="isAdmin" type="primary" @click="openCreateUser">
         <el-icon><Plus /></el-icon>
@@ -7,13 +12,21 @@
       </BaseButton>
     </template>
 
-    <BaseToolbar :model="searchForm" @search="handleSearch" @reset="handleReset">
+    <template #search>
       <BaseFormItem label="关键词">
         <BaseInput v-model="searchForm.keyword" placeholder="用户名/昵称" clearable @keyup.enter="handleSearch" />
       </BaseFormItem>
-    </BaseToolbar>
+    </template>
 
-    <BaseTable :data="sortedUsers" v-loading="loading" stripe>
+    <AdminDataTable
+      v-model:current-page="pageNum"
+      v-model:page-size="pageSize"
+      :data="sortedUsers"
+      :loading="loading"
+      :total="total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    >
       <BaseTableColumn prop="id" label="ID" width="70" />
       <BaseTableColumn prop="username" label="用户名" min-width="120" />
       <BaseTableColumn prop="nickname" label="昵称" min-width="120" />
@@ -51,15 +64,7 @@
           />
         </template>
       </BaseTableColumn>
-    </BaseTable>
-
-    <BasePagination
-      v-model:current-page="pageNum"
-      v-model:page-size="pageSize"
-      :total="total"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    />
+    </AdminDataTable>
 
     <BaseDialogForm
       v-model="dialogVisible"
@@ -70,7 +75,7 @@
     >
       <UserForm ref="userFormRef" :model-value="form" :is-edit="isEdit" />
     </BaseDialogForm>
-  </BasePage>
+  </AdminCrudShell>
 </template>
 
 <script setup>
@@ -81,28 +86,22 @@ import { formatTime } from '@/utils/time'
 import { ENABLE_STATUS_OPTIONS } from '@/constants/status'
 import { useCrudPage } from '@/composables/useCrudPage'
 import { usePermission } from '@/composables/usePermission'
-import BasePage from '@/components/base/BasePage.vue'
+import { useDialogForm } from '@/composables/useDialogForm'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseFormItem from '@/components/base/BaseFormItem.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseSwitch from '@/components/base/BaseSwitch.vue'
 import BaseTag from '@/components/base/BaseTag.vue'
-import BaseToolbar from '@/components/base/BaseToolbar.vue'
-import BasePagination from '@/components/base/BasePagination.vue'
 import BaseTableActions from '@/components/base/BaseTableActions.vue'
-import BaseTable from '@/components/base/BaseTable.vue'
 import BaseTableColumn from '@/components/base/BaseTableColumn.vue'
 import BaseDialogForm from '@/components/base/BaseDialogForm.vue'
 import StatusTag from '@/components/base/StatusTag.vue'
+import AdminCrudShell from '@/components/admin/AdminCrudShell.vue'
+import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import UserForm from '@/components/admin/UserForm.vue'
 import { notify } from '@/services/uiFeedback'
 
 const { isAdmin } = usePermission()
-const dialogVisible = ref(false)
-const submitLoading = ref(false)
-const userFormRef = ref(null)
-const isEdit = ref(false)
-const dialogTitle = ref('添加用户')
 
 const defaultForm = () => ({
   id: null,
@@ -113,8 +112,6 @@ const defaultForm = () => ({
   email: '',
   role: 0
 })
-
-const form = ref(defaultForm())
 
 const {
   loading,
@@ -136,6 +133,35 @@ const {
   deleteMessage: '确定要删除该用户吗？'
 })
 
+const {
+  visible: dialogVisible,
+  isEdit,
+  submitLoading,
+  formRef: userFormRef,
+  form,
+  dialogTitle,
+  openCreate: openCreateDialog,
+  openEdit: openEditDialog,
+  submit: submitDialog
+} = useDialogForm({
+  defaults: defaultForm,
+  normalize: row => ({
+    id: row.id,
+    username: row.username,
+    nickname: row.nickname,
+    password: '',
+    phone: row.phone,
+    email: row.email,
+    role: row.role
+  }),
+  submitCreate: addUser,
+  submitUpdate: updateUser,
+  title: {
+    create: '添加用户',
+    edit: '编辑用户'
+  }
+})
+
 const sortedUsers = computed(() => [...tableData.value].sort((a, b) => {
   if (a.username === 'admin') return -1
   if (b.username === 'admin') return 1
@@ -147,10 +173,7 @@ const openCreateUser = () => {
     notify.warning('没有权限执行此操作')
     return
   }
-  isEdit.value = false
-  dialogTitle.value = '添加用户'
-  form.value = defaultForm()
-  dialogVisible.value = true
+  openCreateDialog()
 }
 
 const openEditUser = (row) => {
@@ -158,43 +181,22 @@ const openEditUser = (row) => {
     notify.warning('没有权限执行此操作')
     return
   }
-  isEdit.value = true
-  dialogTitle.value = '编辑用户'
-  form.value = {
-    id: row.id,
-    username: row.username,
-    nickname: row.nickname,
-    password: '',
-    phone: row.phone,
-    email: row.email,
-    role: row.role
-  }
-  dialogVisible.value = true
+  openEditDialog(row)
 }
 
 const handleSubmit = async () => {
-  const valid = await userFormRef.value?.validate?.().catch(() => false)
-  if (!valid) return
-
-  submitLoading.value = true
   try {
-    const payload = { ...form.value }
-    if (isEdit.value && !payload.password) {
+    await submitDialog((payload, isEditMode) => {
+      if (isEditMode && !payload.password) {
       delete payload.password
-    }
-    if (isEdit.value) {
-      await updateUser(payload)
-      notify.success('更新成功')
-    } else {
-      await addUser(payload)
-      notify.success('添加成功')
-    }
-    dialogVisible.value = false
-    await loadData()
+      }
+      return payload
+    }, async (payload, isEditMode) => {
+      notify.success(isEditMode ? '更新成功' : '添加成功')
+      await loadData()
+    })
   } catch (error) {
     console.error(error)
-  } finally {
-    submitLoading.value = false
   }
 }
 

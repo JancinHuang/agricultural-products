@@ -1,5 +1,10 @@
 <template>
-  <BasePage title="分类列表">
+  <AdminCrudShell
+    title="分类列表"
+    :search-model="searchForm"
+    @search="handleSearch"
+    @reset="handleReset"
+  >
     <template #actions>
       <BaseButton type="primary" @click="openCreateCategory">
         <el-icon><Plus /></el-icon>
@@ -7,13 +12,21 @@
       </BaseButton>
     </template>
 
-    <BaseToolbar :model="searchForm" @search="handleSearch" @reset="handleReset">
+    <template #search>
       <BaseFormItem label="关键词">
         <BaseInput v-model="searchForm.keyword" placeholder="分类名称" clearable @keyup.enter="handleSearch" />
       </BaseFormItem>
-    </BaseToolbar>
+    </template>
 
-    <BaseTable :data="tableData" v-loading="loading" stripe>
+    <AdminDataTable
+      v-model:current-page="pageNum"
+      v-model:page-size="pageSize"
+      :data="tableData"
+      :loading="loading"
+      :total="total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    >
       <BaseTableColumn prop="id" label="ID" width="80" />
       <BaseTableColumn label="图标" width="90">
         <template #default="{ row }">
@@ -39,15 +52,7 @@
           <BaseTableActions @edit="openEditCategory(row)" @delete="deleteCategoryRow(row)" />
         </template>
       </BaseTableColumn>
-    </BaseTable>
-
-    <BasePagination
-      v-model:current-page="pageNum"
-      v-model:page-size="pageSize"
-      :total="total"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    />
+    </AdminDataTable>
 
     <BaseDialogForm
       v-model="dialogVisible"
@@ -66,7 +71,7 @@
     </BaseDialogForm>
 
     <BaseImagePreview v-model="previewVisible" :src="previewUrl" title="图标预览" width="360px" />
-  </BasePage>
+  </AdminCrudShell>
 </template>
 
 <script setup>
@@ -77,29 +82,23 @@ import { formatTime } from '@/utils/time'
 import { ENABLE_STATUS_OPTIONS } from '@/constants/status'
 import { normalizeCategory } from '@/services/domainAdapters'
 import { useCrudPage } from '@/composables/useCrudPage'
-import BasePage from '@/components/base/BasePage.vue'
+import { useDialogForm } from '@/composables/useDialogForm'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseFormItem from '@/components/base/BaseFormItem.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
-import BaseToolbar from '@/components/base/BaseToolbar.vue'
-import BasePagination from '@/components/base/BasePagination.vue'
 import BaseTableActions from '@/components/base/BaseTableActions.vue'
-import BaseTable from '@/components/base/BaseTable.vue'
 import BaseTableColumn from '@/components/base/BaseTableColumn.vue'
 import BaseImagePreview from '@/components/base/BaseImagePreview.vue'
 import BaseDialogForm from '@/components/base/BaseDialogForm.vue'
 import StatusTag from '@/components/base/StatusTag.vue'
+import AdminCrudShell from '@/components/admin/AdminCrudShell.vue'
+import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import CategoryForm from '@/components/admin/CategoryForm.vue'
 import { notify } from '@/services/uiFeedback'
 
-const dialogVisible = ref(false)
-const submitLoading = ref(false)
-const categoryFormRef = ref(null)
 const iconPreviewUrl = ref('')
 const previewVisible = ref(false)
 const previewUrl = ref('')
-const isEdit = ref(false)
-const dialogTitle = ref('添加分类')
 
 const defaultForm = () => ({
   id: null,
@@ -109,8 +108,6 @@ const defaultForm = () => ({
   sort: 0,
   status: 1
 })
-
-const form = ref(defaultForm())
 
 const {
   loading,
@@ -133,6 +130,33 @@ const {
   deleteMessage: '确定要删除该分类吗？'
 })
 
+const {
+  visible: dialogVisible,
+  submitLoading,
+  formRef: categoryFormRef,
+  form,
+  dialogTitle,
+  openCreate: openCreateDialog,
+  openEdit: openEditDialog,
+  submit: submitDialog
+} = useDialogForm({
+  defaults: defaultForm,
+  normalize: row => ({
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    icon: row.icon,
+    sort: row.sort,
+    status: row.status
+  }),
+  submitCreate: addCategory,
+  submitUpdate: updateCategory,
+  title: {
+    create: '添加分类',
+    edit: '编辑分类'
+  }
+})
+
 const getCategoryEmoji = (name) => {
   if (!name) return '🌱'
   const map = {
@@ -152,58 +176,34 @@ const getCategoryEmoji = (name) => {
 }
 
 const openCreateCategory = () => {
-  isEdit.value = false
-  dialogTitle.value = '添加分类'
   iconPreviewUrl.value = ''
-  form.value = defaultForm()
-  dialogVisible.value = true
+  openCreateDialog()
 }
 
 const openEditCategory = (row) => {
-  isEdit.value = true
-  dialogTitle.value = '编辑分类'
   iconPreviewUrl.value = row.iconUrl || ''
-  form.value = {
-    id: row.id,
-    name: row.name,
-    description: row.description,
-    icon: row.icon,
-    sort: row.sort,
-    status: row.status
-  }
-  dialogVisible.value = true
+  openEditDialog(row)
 }
 
 const handleIconUploaded = (result) => {
-  form.value.icon = result.objectKey
+  form.icon = result.objectKey
   iconPreviewUrl.value = result.url
   notify.success('上传成功')
 }
 
 const removeIcon = () => {
-  form.value.icon = ''
+  form.icon = ''
   iconPreviewUrl.value = ''
 }
 
 const handleSubmit = async () => {
-  const valid = await categoryFormRef.value?.validate?.().catch(() => false)
-  if (!valid) return
-
-  submitLoading.value = true
   try {
-    if (isEdit.value) {
-      await updateCategory({ ...form.value })
-      notify.success('更新成功')
-    } else {
-      await addCategory({ ...form.value })
-      notify.success('添加成功')
-    }
-    dialogVisible.value = false
-    await loadData()
+    await submitDialog(null, async (payload, isEditMode) => {
+      notify.success(isEditMode ? '更新成功' : '添加成功')
+      await loadData()
+    })
   } catch (error) {
     console.error(error)
-  } finally {
-    submitLoading.value = false
   }
 }
 
