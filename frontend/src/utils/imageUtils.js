@@ -26,8 +26,6 @@ const IMAGE_CONFIG = {
   conversionQuality: 85
 }
 
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '')
-
 function isAbsoluteImageUrl(url) {
   return /^https?:\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')
 }
@@ -40,7 +38,8 @@ function isPresignedUrl(url) {
 function resolveImageUrl(url) {
   if (!url) return IMAGE_CONFIG.placeholder
   if (isAbsoluteImageUrl(url)) return url
-  return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`
+  if (url.startsWith('/')) return url
+  return IMAGE_CONFIG.placeholder
 }
 
 // 检测浏览器支持的图片格式

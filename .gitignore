@@ -35,3 +35,4 @@ uploads/
 tmp/
 temp/
 db_recovery_backups_*/
+agricultural_products*.sql

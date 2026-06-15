@@ -230,6 +230,7 @@ import { getProductReviews, addReview, replyReview, updateReview, deleteReview a
 import { formatTime } from '@/utils/time'
 import { imageUtils } from '@/utils/imageUtils'
 import { ALLOWED_IMAGE_ACCEPT, allowedImageMessage, isAllowedImageFile } from '@/utils/uploadValidation'
+import { isAdminUser } from '@/utils/auth'
 import { useUserStore } from '@/store/user'
 import { useCartStore } from '@/store/cart'
 
@@ -273,7 +274,7 @@ const replyForm = reactive({
 })
 
 const canReview = computed(() => {
-  return userStore.userInfo && userStore.userInfo.username !== 'admin' && hasCompletedPurchase.value
+  return userStore.userInfo && !isAdminUser(userStore.userInfo) && hasCompletedPurchase.value
 })
 
 const isReviewOwner = (review) => {
@@ -341,7 +342,7 @@ const loadReviewStats = async () => {
 }
 
 const loadCanReview = async () => {
-  if (!userStore.userInfo || userStore.userInfo.username === 'admin') {
+  if (!userStore.userInfo || isAdminUser(userStore.userInfo)) {
     hasCompletedPurchase.value = false
     hasReviewed.value = false
     reviewOrderId.value = null
@@ -554,7 +555,7 @@ const handleUploadRemove = (file) => {
   } else if (file.objectKey) {
     imageToRemove = file.objectKey
   } else if (file.url) {
-    imageToRemove = file.url.replace('http://localhost:8080', '')
+    imageToRemove = file.url
   }
   if (imageToRemove) {
     const images = reviewForm.images ? reviewForm.images.split(',').filter(Boolean) : []

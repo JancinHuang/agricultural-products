@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
+import { clearAuth, getToken } from '@/utils/auth'
 
 const request = axios.create({
   baseURL: '/api',
@@ -8,8 +9,7 @@ const request = axios.create({
 })
 
 const clearAuthAndRedirect = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
+  clearAuth()
   if (router.currentRoute.value.path !== '/login') {
     router.push('/login')
   }
@@ -17,7 +17,7 @@ const clearAuthAndRedirect = () => {
 
 request.interceptors.request.use(
   config => {
-    const token = localStorage.getItem('token')
+    const token = getToken()
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }

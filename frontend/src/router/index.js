@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '@/views/Layout.vue'
 import UserLayout from '@/views/UserLayout.vue'
+import { clearAuth, getStoredUser, getToken, isAdminUser, isTokenExpired } from '@/utils/auth'
 
 const APP_TITLE = '助农商城'
 const publicPaths = ['/login', '/register']
@@ -136,39 +137,11 @@ const router = createRouter({
   routes
 })
 
-const clearAuth = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-}
-
-const parseJwtPayload = (token) => {
-  try {
-    const base64 = token.split('.')[1]
-    if (!base64) return null
-    const normalized = base64.replace(/-/g, '+').replace(/_/g, '/')
-    const json = decodeURIComponent(
-      atob(normalized)
-        .split('')
-        .map(char => `%${(`00${char.charCodeAt(0).toString(16)}`).slice(-2)}`)
-        .join('')
-    )
-    return JSON.parse(json)
-  } catch (error) {
-    return null
-  }
-}
-
-const isTokenExpired = (token) => {
-  const payload = parseJwtPayload(token)
-  if (!payload || !payload.exp) return true
-  return payload.exp * 1000 <= Date.now()
-}
-
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title ? `${to.meta.title} - ${APP_TITLE}` : APP_TITLE
 
-  const token = localStorage.getItem('token')
-  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  const token = getToken()
+  const user = getStoredUser()
   const isPublicPage = publicPaths.includes(to.path)
 
   if (!token) {
@@ -190,12 +163,12 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  if (user && user.username === 'admin' && !to.path.startsWith('/admin') && !isPublicPage) {
+  if (isAdminUser(user) && !to.path.startsWith('/admin') && !isPublicPage) {
     next('/admin/dashboard')
     return
   }
 
-  if (to.meta.requiresAdmin && (!user || user.username !== 'admin')) {
+  if (to.meta.requiresAdmin && !isAdminUser(user)) {
     next('/home')
     return
   }

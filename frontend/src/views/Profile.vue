@@ -103,6 +103,7 @@ import { UserFilled, User, Phone, Message, Clock } from '@element-plus/icons-vue
 import { useUserStore } from '@/store/user'
 import { updateUserInfo, updatePassword } from '@/api/user'
 import { formatTime } from '@/utils/time'
+import { setStoredUser } from '@/utils/auth'
 
 const userStore = useUserStore()
 const userInfo = ref(userStore.userInfo)
@@ -176,7 +177,7 @@ const handleUpdateInfo = async () => {
     userInfo.value.phone = infoForm.phone
     userInfo.value.email = infoForm.email
     userStore.userInfo = userInfo.value
-    localStorage.setItem('user', JSON.stringify(userInfo.value))
+    setStoredUser(userInfo.value)
     ElMessage.success('修改成功')
   } catch (error) {
     console.error(error)

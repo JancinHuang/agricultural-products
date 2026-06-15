@@ -15,10 +15,18 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true
-      },
-      '/upload': {
-        target: 'http://localhost:8080',
-        changeOrigin: true
+      }
+    }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vue: ['vue', 'vue-router', 'pinia'],
+          element: ['element-plus', '@element-plus/icons-vue'],
+          charts: ['echarts'],
+          markdown: ['marked']
+        }
       }
     }
   }

@@ -120,6 +120,7 @@ import { Plus, Search, Refresh } from '@element-plus/icons-vue'
 import { getUserList, addUser, updateUser, deleteUser, updateUserStatus } from '@/api/user'
 import { formatTime } from '@/utils/time'
 import { useUserStore } from '@/store/user'
+import { isAdminUser } from '@/utils/auth'
 
 const userStore = useUserStore()
 const loading = ref(false)
@@ -131,7 +132,7 @@ const pageSize = ref(10)
 const dialogVisible = ref(false)
 const formRef = ref(null)
 
-const isAdmin = computed(() => userStore.userInfo?.username === 'admin')
+const isAdmin = computed(() => isAdminUser(userStore.userInfo))
 
 const searchForm = reactive({
   keyword: ''
