@@ -1,47 +1,47 @@
 <template>
   <BasePage title="轮播图列表">
     <template #actions>
-      <el-button type="primary" @click="openCreateBanner">
+      <BaseButton type="primary" @click="openCreateBanner">
         <el-icon><Plus /></el-icon>
         添加轮播图
-      </el-button>
+      </BaseButton>
     </template>
 
     <BaseToolbar :model="searchForm" @search="handleSearch" @reset="handleReset">
-      <el-form-item label="关键词">
-        <el-input v-model="searchForm.keyword" placeholder="标题" clearable @keyup.enter="handleSearch" />
-      </el-form-item>
-      <el-form-item label="状态">
-        <el-select v-model="searchForm.status" placeholder="全部状态" clearable style="width: 120px">
-          <el-option v-for="item in ENABLE_STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
-      </el-form-item>
+      <BaseFormItem label="关键词">
+        <BaseInput v-model="searchForm.keyword" placeholder="标题" clearable @keyup.enter="handleSearch" />
+      </BaseFormItem>
+      <BaseFormItem label="状态">
+        <BaseSelect v-model="searchForm.status" placeholder="全部状态" clearable style="width: 120px">
+          <BaseOption v-for="item in ENABLE_STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+        </BaseSelect>
+      </BaseFormItem>
     </BaseToolbar>
 
-    <el-table :data="tableData" v-loading="loading" stripe>
-      <el-table-column prop="id" label="ID" width="70" />
-      <el-table-column label="图片" width="150">
+    <BaseTable :data="tableData" v-loading="loading" stripe>
+      <BaseTableColumn prop="id" label="ID" width="70" />
+      <BaseTableColumn label="图片" width="150">
         <template #default="{ row }">
           <img v-if="row.image" :src="row.imageUrl" class="banner-thumb" @click="previewImage(row.imageUrl)" />
           <span v-else>-</span>
         </template>
-      </el-table-column>
-      <el-table-column prop="title" label="标题" min-width="140" />
-      <el-table-column prop="subtitle" label="副标题" min-width="220" show-overflow-tooltip />
-      <el-table-column prop="buttonText" label="按钮" width="100" />
-      <el-table-column prop="linkUrl" label="跳转链接" min-width="140" show-overflow-tooltip />
-      <el-table-column prop="sort" label="排序" width="80" />
-      <el-table-column label="状态" width="90">
+      </BaseTableColumn>
+      <BaseTableColumn prop="title" label="标题" min-width="140" />
+      <BaseTableColumn prop="subtitle" label="副标题" min-width="220" show-overflow-tooltip />
+      <BaseTableColumn prop="buttonText" label="按钮" width="100" />
+      <BaseTableColumn prop="linkUrl" label="跳转链接" min-width="140" show-overflow-tooltip />
+      <BaseTableColumn prop="sort" label="排序" width="80" />
+      <BaseTableColumn label="状态" width="90">
         <template #default="{ row }">
           <StatusTag :value="row.status" :options="ENABLE_STATUS_OPTIONS" />
         </template>
-      </el-table-column>
-      <el-table-column label="操作" width="160" fixed="right">
+      </BaseTableColumn>
+      <BaseTableColumn label="操作" width="160" fixed="right">
         <template #default="{ row }">
           <BaseTableActions @edit="openEditBanner(row)" @delete="deleteBannerRow(row)" />
         </template>
-      </el-table-column>
-    </el-table>
+      </BaseTableColumn>
+    </BaseTable>
 
     <BasePagination
       v-model:current-page="pageNum"
@@ -52,18 +52,20 @@
       @current-change="handleCurrentChange"
     />
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="620px" destroy-on-close>
+    <BaseDialogForm
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="620px"
+      :loading="submitLoading"
+      @submit="handleSubmit"
+    >
       <BannerForm
         ref="bannerFormRef"
         :model-value="form"
         :image-preview-url="imagePreviewUrl"
         @image-uploaded="handleImageUploaded"
       />
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
-      </template>
-    </el-dialog>
+    </BaseDialogForm>
 
     <BaseImagePreview v-model="previewVisible" :src="previewUrl" title="图片预览" width="720px" />
   </BasePage>
@@ -71,19 +73,27 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { getBannerPage, addBanner, updateBanner, deleteBanner } from '@/api/banner'
 import { ENABLE_STATUS_OPTIONS } from '@/constants/status'
 import { normalizeBanner } from '@/services/domainAdapters'
 import { useCrudPage } from '@/composables/useCrudPage'
 import BasePage from '@/components/base/BasePage.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseFormItem from '@/components/base/BaseFormItem.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import BaseOption from '@/components/base/BaseOption.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
 import BaseToolbar from '@/components/base/BaseToolbar.vue'
 import BasePagination from '@/components/base/BasePagination.vue'
 import BaseTableActions from '@/components/base/BaseTableActions.vue'
+import BaseTable from '@/components/base/BaseTable.vue'
+import BaseTableColumn from '@/components/base/BaseTableColumn.vue'
 import BaseImagePreview from '@/components/base/BaseImagePreview.vue'
+import BaseDialogForm from '@/components/base/BaseDialogForm.vue'
 import StatusTag from '@/components/base/StatusTag.vue'
 import BannerForm from '@/components/admin/BannerForm.vue'
+import { notify } from '@/services/uiFeedback'
 
 const dialogVisible = ref(false)
 const submitLoading = ref(false)
@@ -159,7 +169,7 @@ const openEditBanner = (row) => {
 const handleImageUploaded = (result) => {
   form.value.image = result.objectKey
   imagePreviewUrl.value = result.url
-  ElMessage.success('上传成功')
+  notify.success('上传成功')
 }
 
 const handleSubmit = async () => {
@@ -170,10 +180,10 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value) {
       await updateBanner({ ...form.value })
-      ElMessage.success('更新成功')
+      notify.success('更新成功')
     } else {
       await addBanner({ ...form.value })
-      ElMessage.success('添加成功')
+      notify.success('添加成功')
     }
     dialogVisible.value = false
     await loadData()
@@ -186,7 +196,7 @@ const handleSubmit = async () => {
 
 const deleteBannerRow = async (row) => {
   try {
-    await handleDelete(row, () => ElMessage.success('删除成功'))
+    await handleDelete(row, () => notify.success('删除成功'))
   } catch (error) {
     if (error !== 'cancel') console.error(error)
   }

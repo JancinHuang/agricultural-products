@@ -1,21 +1,24 @@
 <template>
-  <el-form :inline="true" :model="model" class="base-toolbar">
+  <BaseForm :inline="true" :model="model" class="base-toolbar">
     <slot />
-    <el-form-item class="base-toolbar__actions">
-      <el-button type="primary" @click="$emit('search')">
+    <BaseFormItem class="base-toolbar__actions">
+      <BaseButton type="primary" @click="$emit('search')">
         <el-icon><Search /></el-icon>
         搜索
-      </el-button>
-      <el-button @click="$emit('reset')">
+      </BaseButton>
+      <BaseButton @click="$emit('reset')">
         <el-icon><Refresh /></el-icon>
         重置
-      </el-button>
-    </el-form-item>
-  </el-form>
+      </BaseButton>
+    </BaseFormItem>
+  </BaseForm>
 </template>
 
 <script setup>
 import { Search, Refresh } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseForm from '@/components/base/BaseForm.vue'
+import BaseFormItem from '@/components/base/BaseFormItem.vue'
 
 defineProps({
   model: {

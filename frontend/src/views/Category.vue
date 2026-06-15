@@ -1,45 +1,45 @@
 <template>
   <BasePage title="分类列表">
     <template #actions>
-      <el-button type="primary" @click="openCreateCategory">
+      <BaseButton type="primary" @click="openCreateCategory">
         <el-icon><Plus /></el-icon>
         添加分类
-      </el-button>
+      </BaseButton>
     </template>
 
     <BaseToolbar :model="searchForm" @search="handleSearch" @reset="handleReset">
-      <el-form-item label="关键词">
-        <el-input v-model="searchForm.keyword" placeholder="分类名称" clearable @keyup.enter="handleSearch" />
-      </el-form-item>
+      <BaseFormItem label="关键词">
+        <BaseInput v-model="searchForm.keyword" placeholder="分类名称" clearable @keyup.enter="handleSearch" />
+      </BaseFormItem>
     </BaseToolbar>
 
-    <el-table :data="tableData" v-loading="loading" stripe>
-      <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column label="图标" width="90">
+    <BaseTable :data="tableData" v-loading="loading" stripe>
+      <BaseTableColumn prop="id" label="ID" width="80" />
+      <BaseTableColumn label="图标" width="90">
         <template #default="{ row }">
           <img v-if="row.icon" :src="row.iconUrl" class="category-thumb" @click="previewImage(row.iconUrl)" />
           <span v-else class="empty-icon">{{ getCategoryEmoji(row.name) }}</span>
         </template>
-      </el-table-column>
-      <el-table-column prop="name" label="分类名称" min-width="130" />
-      <el-table-column prop="description" label="描述" min-width="180" show-overflow-tooltip />
-      <el-table-column prop="sort" label="排序" width="90" />
-      <el-table-column label="状态" width="100">
+      </BaseTableColumn>
+      <BaseTableColumn prop="name" label="分类名称" min-width="130" />
+      <BaseTableColumn prop="description" label="描述" min-width="180" show-overflow-tooltip />
+      <BaseTableColumn prop="sort" label="排序" width="90" />
+      <BaseTableColumn label="状态" width="100">
         <template #default="{ row }">
           <StatusTag :value="row.status" :options="ENABLE_STATUS_OPTIONS" />
         </template>
-      </el-table-column>
-      <el-table-column label="创建时间" width="170">
+      </BaseTableColumn>
+      <BaseTableColumn label="创建时间" width="170">
         <template #default="{ row }">
           <span class="time-cell">{{ formatTime(row.createTime) }}</span>
         </template>
-      </el-table-column>
-      <el-table-column label="操作" width="160" fixed="right">
+      </BaseTableColumn>
+      <BaseTableColumn label="操作" width="160" fixed="right">
         <template #default="{ row }">
           <BaseTableActions @edit="openEditCategory(row)" @delete="deleteCategoryRow(row)" />
         </template>
-      </el-table-column>
-    </el-table>
+      </BaseTableColumn>
+    </BaseTable>
 
     <BasePagination
       v-model:current-page="pageNum"
@@ -49,7 +49,13 @@
       @current-change="handleCurrentChange"
     />
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="560px" destroy-on-close>
+    <BaseDialogForm
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="560px"
+      :loading="submitLoading"
+      @submit="handleSubmit"
+    >
       <CategoryForm
         ref="categoryFormRef"
         :model-value="form"
@@ -57,11 +63,7 @@
         @icon-uploaded="handleIconUploaded"
         @remove-icon="removeIcon"
       />
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
-      </template>
-    </el-dialog>
+    </BaseDialogForm>
 
     <BaseImagePreview v-model="previewVisible" :src="previewUrl" title="图标预览" width="360px" />
   </BasePage>
@@ -69,7 +71,6 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { getCategoryPage, addCategory, updateCategory, deleteCategory } from '@/api/category'
 import { formatTime } from '@/utils/time'
@@ -77,12 +78,19 @@ import { ENABLE_STATUS_OPTIONS } from '@/constants/status'
 import { normalizeCategory } from '@/services/domainAdapters'
 import { useCrudPage } from '@/composables/useCrudPage'
 import BasePage from '@/components/base/BasePage.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseFormItem from '@/components/base/BaseFormItem.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
 import BaseToolbar from '@/components/base/BaseToolbar.vue'
 import BasePagination from '@/components/base/BasePagination.vue'
 import BaseTableActions from '@/components/base/BaseTableActions.vue'
+import BaseTable from '@/components/base/BaseTable.vue'
+import BaseTableColumn from '@/components/base/BaseTableColumn.vue'
 import BaseImagePreview from '@/components/base/BaseImagePreview.vue'
+import BaseDialogForm from '@/components/base/BaseDialogForm.vue'
 import StatusTag from '@/components/base/StatusTag.vue'
 import CategoryForm from '@/components/admin/CategoryForm.vue'
+import { notify } from '@/services/uiFeedback'
 
 const dialogVisible = ref(false)
 const submitLoading = ref(false)
@@ -169,7 +177,7 @@ const openEditCategory = (row) => {
 const handleIconUploaded = (result) => {
   form.value.icon = result.objectKey
   iconPreviewUrl.value = result.url
-  ElMessage.success('上传成功')
+  notify.success('上传成功')
 }
 
 const removeIcon = () => {
@@ -185,10 +193,10 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value) {
       await updateCategory({ ...form.value })
-      ElMessage.success('更新成功')
+      notify.success('更新成功')
     } else {
       await addCategory({ ...form.value })
-      ElMessage.success('添加成功')
+      notify.success('添加成功')
     }
     dialogVisible.value = false
     await loadData()
@@ -201,7 +209,7 @@ const handleSubmit = async () => {
 
 const deleteCategoryRow = async (row) => {
   try {
-    await handleDelete(row, () => ElMessage.success('删除成功'))
+    await handleDelete(row, () => notify.success('删除成功'))
   } catch (error) {
     if (error !== 'cancel') console.error(error)
   }

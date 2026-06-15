@@ -54,7 +54,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import ProductDetailMain from '@/components/shop/ProductDetailMain.vue'
 import ProductReviewSection from '@/components/shop/ProductReviewSection.vue'
 import ProductReviewDialog from '@/components/shop/ProductReviewDialog.vue'
@@ -64,6 +63,7 @@ import { addToFavorite, removeFromFavorite, checkFavorite } from '@/api/favorite
 import { useUserStore } from '@/store/user'
 import { useCartStore } from '@/store/cart'
 import { useProductReviews } from '@/composables/useProductReviews'
+import { notify } from '@/services/uiFeedback'
 
 const route = useRoute()
 const router = useRouter()
@@ -117,7 +117,7 @@ const loadProduct = async () => {
     product.value = res.data
   } catch (error) {
     console.error(error)
-    ElMessage.error('加载商品失败')
+    notify.error('加载商品失败')
   } finally {
     loading.value = false
   }
@@ -136,24 +136,24 @@ const loadFavoriteStatus = async () => {
 const handleAddToCart = async () => {
   if (!product.value) return
   if (product.value.stock <= 0) {
-    ElMessage.warning('商品已售罄')
+    notify.warning('商品已售罄')
     return
   }
   if (quantity.value > product.value.stock) {
-    ElMessage.warning(`库存不足，最多可购买${product.value.stock}件`)
+    notify.warning(`库存不足，最多可购买${product.value.stock}件`)
     return
   }
   addingToCart.value = true
   try {
     const success = await cartStore.addToCart(product.value, quantity.value)
     if (success) {
-      ElMessage.success({ message: `${product.value.name} ×${quantity.value} 已加入购物车 🛒`, duration: 1500 })
+      notify.success({ message: `${product.value.name} ×${quantity.value} 已加入购物车 🛒`, duration: 1500 })
     } else {
-      ElMessage.error('加入购物车失败')
+      notify.error('加入购物车失败')
     }
   } catch (error) {
     console.error(error)
-    ElMessage.error('加入购物车失败')
+    notify.error('加入购物车失败')
   } finally {
     addingToCart.value = false
   }
@@ -161,22 +161,22 @@ const handleAddToCart = async () => {
 
 const handleToggleFavorite = async () => {
   if (!userStore.userInfo) {
-    ElMessage.warning('请先登录')
+    notify.warning('请先登录')
     router.push('/login')
     return
   }
   try {
     if (isFavorite.value) {
       await removeFromFavorite(product.value.id)
-      ElMessage.success('已取消收藏')
+      notify.success('已取消收藏')
     } else {
       await addToFavorite(product.value.id)
-      ElMessage.success('收藏成功')
+      notify.success('收藏成功')
     }
     isFavorite.value = !isFavorite.value
   } catch (error) {
     console.error(error)
-    ElMessage.error('操作失败')
+    notify.error('操作失败')
   }
 }
 

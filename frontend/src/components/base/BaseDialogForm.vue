@@ -4,13 +4,14 @@
     :title="title"
     :width="width"
     :close-on-click-modal="closeOnClickModal"
+    :destroy-on-close="destroyOnClose"
     @closed="$emit('closed')"
   >
     <slot />
     <template #footer>
       <slot name="footer">
-        <el-button @click="innerVisible = false">取消</el-button>
-        <el-button type="primary" :loading="loading" @click="$emit('submit')">确定</el-button>
+        <BaseButton @click="innerVisible = false">取消</BaseButton>
+        <BaseButton type="primary" :loading="loading" @click="$emit('submit')">确定</BaseButton>
       </slot>
     </template>
   </el-dialog>
@@ -18,6 +19,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 const props = defineProps({
   modelValue: {
@@ -39,6 +41,10 @@ const props = defineProps({
   closeOnClickModal: {
     type: Boolean,
     default: false
+  },
+  destroyOnClose: {
+    type: Boolean,
+    default: true
   }
 })
 

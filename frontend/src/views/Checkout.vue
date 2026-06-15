@@ -24,12 +24,12 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import CheckoutAddressForm from '@/components/shop/CheckoutAddressForm.vue'
 import CheckoutItemsPanel from '@/components/shop/CheckoutItemsPanel.vue'
 import CheckoutSummaryBar from '@/components/shop/CheckoutSummaryBar.vue'
 import { getCartList } from '@/api/cart'
 import { createOrder } from '@/api/order'
+import { notify } from '@/services/uiFeedback'
 
 const router = useRouter()
 const loading = ref(false)
@@ -54,7 +54,7 @@ const loadSelectedItems = async () => {
     selectedItems.value = (res.data || []).filter(item => item.selected === 1)
 
     if (selectedItems.value.length === 0) {
-      ElMessage.warning('请先选择要购买的商品')
+      notify.warning('请先选择要购买的商品')
       router.push('/cart')
     }
   } catch (error) {
@@ -75,7 +75,7 @@ const submitOrder = async () => {
   submitting.value = true
   try {
     await createOrder(orderForm)
-    ElMessage.success('订单创建成功')
+    notify.success('订单创建成功')
     router.push('/my-order')
   } catch (error) {
     console.error(error)

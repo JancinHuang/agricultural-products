@@ -23,13 +23,13 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { updateUserInfo, updatePassword } from '@/api/user'
 import { setStoredUser } from '@/utils/auth'
 import ProfileBanner from '@/components/business/ProfileBanner.vue'
 import ProfileEditPanel from '@/components/business/ProfileEditPanel.vue'
 import ProfileInfoPanel from '@/components/business/ProfileInfoPanel.vue'
+import { notify } from '@/services/uiFeedback'
 
 const userStore = useUserStore()
 const userInfo = ref(userStore.userInfo)
@@ -102,7 +102,7 @@ const handleUpdateInfo = async () => {
     userInfo.value.email = infoForm.email
     userStore.userInfo = userInfo.value
     setStoredUser(userInfo.value)
-    ElMessage.success('修改成功')
+    notify.success('修改成功')
   } catch (error) {
     console.error(error)
   } finally {
@@ -121,7 +121,7 @@ const handleUpdatePassword = async () => {
       oldPassword: pwdForm.oldPassword,
       newPassword: pwdForm.newPassword
     })
-    ElMessage.success('密码修改成功，请重新登录')
+    notify.success('密码修改成功，请重新登录')
     userStore.logout()
   } catch (error) {
     console.error(error)

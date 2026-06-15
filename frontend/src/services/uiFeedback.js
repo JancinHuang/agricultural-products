@@ -16,11 +16,12 @@ export const notify = {
 }
 
 export function confirmAction(message, options = {}) {
-  return ElMessageBox.confirm(message, options.title || '提示', {
+  const { title = '提示', ...messageOptions } = options
+  return ElMessageBox.confirm(message, title, {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
-    type: options.type || 'info',
-    ...options
+    type: messageOptions.type || 'info',
+    ...messageOptions
   })
 }
 

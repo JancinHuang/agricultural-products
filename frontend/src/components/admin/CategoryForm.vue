@@ -1,9 +1,9 @@
 <template>
-  <el-form ref="formRef" :model="modelValue" :rules="rules" label-width="86px">
-    <el-form-item label="名称" prop="name">
-      <el-input v-model="modelValue.name" placeholder="请输入分类名称" />
-    </el-form-item>
-    <el-form-item label="图标" prop="icon">
+  <BaseForm ref="formRef" :model="modelValue" :rules="rules" label-width="86px">
+    <BaseFormItem label="名称" prop="name">
+      <BaseInput v-model="modelValue.name" placeholder="请输入分类名称" />
+    </BaseFormItem>
+    <BaseFormItem label="图标" prop="icon">
       <div class="category-form__icon">
         <BaseImageUpload
           v-model="modelValue.icon"
@@ -12,26 +12,33 @@
           placeholder="上传图标"
           @uploaded="$emit('icon-uploaded', $event)"
         />
-        <el-button v-if="modelValue.icon || iconPreviewUrl" text type="danger" @click="$emit('remove-icon')">移除图标</el-button>
+        <BaseButton v-if="modelValue.icon || iconPreviewUrl" text type="danger" @click="$emit('remove-icon')">移除图标</BaseButton>
       </div>
-    </el-form-item>
-    <el-form-item label="描述" prop="description">
-      <el-input v-model="modelValue.description" type="textarea" :rows="3" placeholder="请输入描述" />
-    </el-form-item>
-    <el-form-item label="排序" prop="sort">
-      <el-input-number v-model="modelValue.sort" :min="0" :max="999" />
-    </el-form-item>
-    <el-form-item label="状态" prop="status">
-      <el-radio-group v-model="modelValue.status">
-        <el-radio :value="1">启用</el-radio>
-        <el-radio :value="0">禁用</el-radio>
-      </el-radio-group>
-    </el-form-item>
-  </el-form>
+    </BaseFormItem>
+    <BaseFormItem label="描述" prop="description">
+      <BaseInput v-model="modelValue.description" type="textarea" :rows="3" placeholder="请输入描述" />
+    </BaseFormItem>
+    <BaseFormItem label="排序" prop="sort">
+      <BaseInputNumber v-model="modelValue.sort" :min="0" :max="999" />
+    </BaseFormItem>
+    <BaseFormItem label="状态" prop="status">
+      <BaseRadioGroup v-model="modelValue.status">
+        <BaseRadio :value="1">启用</BaseRadio>
+        <BaseRadio :value="0">禁用</BaseRadio>
+      </BaseRadioGroup>
+    </BaseFormItem>
+  </BaseForm>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseForm from '@/components/base/BaseForm.vue'
+import BaseFormItem from '@/components/base/BaseFormItem.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import BaseInputNumber from '@/components/base/BaseInputNumber.vue'
+import BaseRadio from '@/components/base/BaseRadio.vue'
+import BaseRadioGroup from '@/components/base/BaseRadioGroup.vue'
 import BaseImageUpload from '@/components/base/BaseImageUpload.vue'
 
 defineProps({

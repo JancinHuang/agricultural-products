@@ -40,7 +40,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import HomeHero from '@/components/home/HomeHero.vue'
 import HomeCategoryGrid from '@/components/home/HomeCategoryGrid.vue'
 import HomeProductSection from '@/components/home/HomeProductSection.vue'
@@ -51,6 +50,7 @@ import { useCart } from '@/composables/useCart'
 import { useUserStore } from '@/store/user'
 import { imageUtils } from '@/utils/imageUtils'
 import { normalizeProduct, withPageDefaults } from '@/services/domainAdapters'
+import { notify } from '@/services/uiFeedback'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -156,17 +156,17 @@ const loadNewProducts = async () => {
 
 const handleAddToCart = async (product) => {
   if (product.stock <= 0) {
-    ElMessage.warning('商品已售罄')
+    notify.warning('商品已售罄')
     return
   }
   try {
     const success = await addToCart(product, 1)
     if (success) {
-      ElMessage.success({ message: `${product.name} 已加入购物车`, duration: 1500 })
+      notify.success({ message: `${product.name} 已加入购物车`, duration: 1500 })
     }
   } catch (error) {
     console.error(error)
-    ElMessage.error('加入购物车失败')
+    notify.error('加入购物车失败')
   }
 }
 

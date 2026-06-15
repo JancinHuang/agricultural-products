@@ -1,31 +1,31 @@
 <template>
   <BasePage title="产品列表">
     <template #actions>
-      <el-button type="primary" @click="openCreateProduct">
+      <BaseButton type="primary" @click="openCreateProduct">
         <el-icon><Plus /></el-icon>
         添加产品
-      </el-button>
+      </BaseButton>
     </template>
 
     <BaseToolbar :model="searchForm" @search="handleSearch" @reset="handleReset">
-      <el-form-item label="关键词">
-        <el-input v-model="searchForm.keyword" placeholder="产品名称" clearable @keyup.enter="handleSearch" />
-      </el-form-item>
-      <el-form-item label="分类">
-        <el-select v-model="searchForm.categoryId" placeholder="全部分类" clearable style="width: 140px">
-          <el-option v-for="item in categoryList" :key="item.id" :label="item.name" :value="item.id" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="状态">
-        <el-select v-model="searchForm.status" placeholder="全部状态" clearable style="width: 120px">
-          <el-option v-for="item in PRODUCT_STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
-      </el-form-item>
+      <BaseFormItem label="关键词">
+        <BaseInput v-model="searchForm.keyword" placeholder="产品名称" clearable @keyup.enter="handleSearch" />
+      </BaseFormItem>
+      <BaseFormItem label="分类">
+        <BaseSelect v-model="searchForm.categoryId" placeholder="全部分类" clearable style="width: 140px">
+          <BaseOption v-for="item in categoryList" :key="item.id" :label="item.name" :value="item.id" />
+        </BaseSelect>
+      </BaseFormItem>
+      <BaseFormItem label="状态">
+        <BaseSelect v-model="searchForm.status" placeholder="全部状态" clearable style="width: 120px">
+          <BaseOption v-for="item in PRODUCT_STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+        </BaseSelect>
+      </BaseFormItem>
     </BaseToolbar>
 
-    <el-table :data="tableData" v-loading="loading" stripe>
-      <el-table-column prop="id" label="ID" width="70" />
-      <el-table-column label="图片" width="86">
+    <BaseTable :data="tableData" v-loading="loading" stripe>
+      <BaseTableColumn prop="id" label="ID" width="70" />
+      <BaseTableColumn label="图片" width="86">
         <template #default="{ row }">
           <img
             v-if="row.image"
@@ -36,34 +36,34 @@
           />
           <span v-else>-</span>
         </template>
-      </el-table-column>
-      <el-table-column prop="name" label="产品名称" min-width="130" />
-      <el-table-column prop="categoryName" label="分类" min-width="100" />
-      <el-table-column label="价格" width="100">
+      </BaseTableColumn>
+      <BaseTableColumn prop="name" label="产品名称" min-width="130" />
+      <BaseTableColumn prop="categoryName" label="分类" min-width="100" />
+      <BaseTableColumn label="价格" width="100">
         <template #default="{ row }">
           <PriceText :value="row.price" />
         </template>
-      </el-table-column>
-      <el-table-column prop="stock" label="库存" width="90" />
-      <el-table-column prop="unit" label="单位" width="80" />
-      <el-table-column prop="origin" label="产地" min-width="110" />
-      <el-table-column prop="sales" label="销量" width="90" />
-      <el-table-column label="状态" width="90">
+      </BaseTableColumn>
+      <BaseTableColumn prop="stock" label="库存" width="90" />
+      <BaseTableColumn prop="unit" label="单位" width="80" />
+      <BaseTableColumn prop="origin" label="产地" min-width="110" />
+      <BaseTableColumn prop="sales" label="销量" width="90" />
+      <BaseTableColumn label="状态" width="90">
         <template #default="{ row }">
           <StatusTag :value="row.status" :options="PRODUCT_STATUS_OPTIONS" />
         </template>
-      </el-table-column>
-      <el-table-column label="创建时间" min-width="160">
+      </BaseTableColumn>
+      <BaseTableColumn label="创建时间" min-width="160">
         <template #default="{ row }">
           <span class="time-cell">{{ formatTime(row.createTime) }}</span>
         </template>
-      </el-table-column>
-      <el-table-column label="操作" width="160" fixed="right">
+      </BaseTableColumn>
+      <BaseTableColumn label="操作" width="160" fixed="right">
         <template #default="{ row }">
           <BaseTableActions @edit="openEditProduct(row)" @delete="deleteProductRow(row)" />
         </template>
-      </el-table-column>
-    </el-table>
+      </BaseTableColumn>
+    </BaseTable>
 
     <BasePagination
       v-model:current-page="pageNum"
@@ -73,7 +73,13 @@
       @current-change="handleCurrentChange"
     />
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" destroy-on-close>
+    <BaseDialogForm
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="600px"
+      :loading="submitLoading"
+      @submit="handleSubmit"
+    >
       <ProductForm
         ref="productFormRef"
         :model-value="form"
@@ -81,11 +87,7 @@
         :image-preview-url="imagePreviewUrl"
         @image-uploaded="handleImageUploaded"
       />
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
-      </template>
-    </el-dialog>
+    </BaseDialogForm>
 
     <BaseImagePreview v-model="previewVisible" :src="previewUrl" title="图片预览" />
   </BasePage>
@@ -93,7 +95,6 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { getProductPage, addProduct, updateProduct, deleteProduct } from '@/api/product'
 import { getCategoryList } from '@/api/category'
@@ -102,13 +103,22 @@ import { PRODUCT_STATUS_OPTIONS } from '@/constants/status'
 import { normalizeProduct } from '@/services/domainAdapters'
 import { useCrudPage } from '@/composables/useCrudPage'
 import BasePage from '@/components/base/BasePage.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseFormItem from '@/components/base/BaseFormItem.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import BaseOption from '@/components/base/BaseOption.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
 import BaseToolbar from '@/components/base/BaseToolbar.vue'
 import BasePagination from '@/components/base/BasePagination.vue'
 import BaseTableActions from '@/components/base/BaseTableActions.vue'
+import BaseTable from '@/components/base/BaseTable.vue'
+import BaseTableColumn from '@/components/base/BaseTableColumn.vue'
 import BaseImagePreview from '@/components/base/BaseImagePreview.vue'
+import BaseDialogForm from '@/components/base/BaseDialogForm.vue'
 import StatusTag from '@/components/base/StatusTag.vue'
 import PriceText from '@/components/base/PriceText.vue'
 import ProductForm from '@/components/admin/ProductForm.vue'
+import { notify } from '@/services/uiFeedback'
 
 const categoryList = ref([])
 const dialogVisible = ref(false)
@@ -200,7 +210,7 @@ const openEditProduct = (row) => {
 const handleImageUploaded = (result) => {
   form.value.image = result.objectKey
   imagePreviewUrl.value = result.url
-  ElMessage.success('上传成功')
+  notify.success('上传成功')
 }
 
 const handleSubmit = async () => {
@@ -212,10 +222,10 @@ const handleSubmit = async () => {
     const payload = { ...form.value }
     if (isEdit.value) {
       await updateProduct(payload)
-      ElMessage.success('更新成功')
+      notify.success('更新成功')
     } else {
       await addProduct(payload)
-      ElMessage.success('添加成功')
+      notify.success('添加成功')
     }
     dialogVisible.value = false
     await loadData()
@@ -228,7 +238,7 @@ const handleSubmit = async () => {
 
 const deleteProductRow = async (row) => {
   try {
-    await handleDelete(row, () => ElMessage.success('删除成功'))
+    await handleDelete(row, () => notify.success('删除成功'))
   } catch (error) {
     if (error !== 'cancel') console.error(error)
   }

@@ -1,10 +1,11 @@
 <template>
-  <el-tag :type="option.type">{{ option.label }}</el-tag>
+  <BaseTag :type="option.type">{{ option.label }}</BaseTag>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { ENABLE_STATUS_OPTIONS } from '@/constants/status'
+import BaseTag from '@/components/base/BaseTag.vue'
 
 const props = defineProps({
   value: {
