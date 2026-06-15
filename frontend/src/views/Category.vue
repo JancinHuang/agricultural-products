@@ -1,157 +1,99 @@
 <template>
-  <div class="page-container">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>分类列表</span>
-          <el-button type="primary" @click="handleAdd">
-            <el-icon><Plus /></el-icon>
-            添加分类
-          </el-button>
-        </div>
-      </template>
+  <BasePage title="分类列表">
+    <template #actions>
+      <el-button type="primary" @click="openCreateCategory">
+        <el-icon><Plus /></el-icon>
+        添加分类
+      </el-button>
+    </template>
 
-      <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="关键词">
-          <el-input v-model="searchForm.keyword" placeholder="分类名称" clearable @keyup.enter="handleSearch" />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>
-            搜索
-          </el-button>
-          <el-button @click="handleReset">
-            <el-icon><Refresh /></el-icon>
-            重置
-          </el-button>
-        </el-form-item>
-      </el-form>
+    <BaseToolbar :model="searchForm" @search="handleSearch" @reset="handleReset">
+      <el-form-item label="关键词">
+        <el-input v-model="searchForm.keyword" placeholder="分类名称" clearable @keyup.enter="handleSearch" />
+      </el-form-item>
+    </BaseToolbar>
 
-      <el-table :data="tableData" v-loading="loading" stripe>
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="图标" width="90">
-          <template #default="{ row }">
-            <img
-              v-if="row.icon"
-              :src="getDisplayIconUrl(row)"
-              class="category-thumb"
-              @click="previewImage(getDisplayIconUrl(row))"
-            />
-            <span v-else class="empty-icon">{{ getCategoryEmoji(row.name) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="name" label="分类名称" min-width="130" />
-        <el-table-column prop="description" label="描述" min-width="180" show-overflow-tooltip />
-        <el-table-column prop="sort" label="排序" width="90" />
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-              {{ row.status === 1 ? '启用' : '禁用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="创建时间" width="170">
-          <template #default="{ row }">
-            {{ formatTime(row.createTime) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+    <el-table :data="tableData" v-loading="loading" stripe>
+      <el-table-column prop="id" label="ID" width="80" />
+      <el-table-column label="图标" width="90">
+        <template #default="{ row }">
+          <img v-if="row.icon" :src="row.iconUrl" class="category-thumb" @click="previewImage(row.iconUrl)" />
+          <span v-else class="empty-icon">{{ getCategoryEmoji(row.name) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="name" label="分类名称" min-width="130" />
+      <el-table-column prop="description" label="描述" min-width="180" show-overflow-tooltip />
+      <el-table-column prop="sort" label="排序" width="90" />
+      <el-table-column label="状态" width="100">
+        <template #default="{ row }">
+          <StatusTag :value="row.status" :options="ENABLE_STATUS_OPTIONS" />
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" width="170">
+        <template #default="{ row }">
+          <span class="time-cell">{{ formatTime(row.createTime) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="160" fixed="right">
+        <template #default="{ row }">
+          <BaseTableActions @edit="openEditCategory(row)" @delete="deleteCategoryRow(row)" />
+        </template>
+      </el-table-column>
+    </el-table>
 
-      <el-pagination
-        v-model:current-page="pageNum"
-        v-model:page-size="pageSize"
-        :total="total"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="loadData"
-        @current-change="loadData"
-      />
-    </el-card>
+    <BasePagination
+      v-model:current-page="pageNum"
+      v-model:page-size="pageSize"
+      :total="total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="560px" destroy-on-close>
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="86px">
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入分类名称" />
-        </el-form-item>
-        <el-form-item label="图标" prop="icon">
-          <div class="icon-editor">
-            <el-upload
-              class="icon-uploader"
-              :show-file-list="false"
-              :before-upload="beforeUpload"
-              :http-request="handleUpload"
-              :accept="ALLOWED_IMAGE_ACCEPT"
-            >
-              <div class="upload-trigger">
-                <img v-if="form.icon || iconPreviewUrl" :src="iconPreviewUrl || getIconUrl(form.icon)" class="upload-preview" />
-                <div v-else class="upload-placeholder">
-                  <el-icon><Plus /></el-icon>
-                  <span>上传图标</span>
-                </div>
-              </div>
-            </el-upload>
-            <el-button v-if="form.icon || iconPreviewUrl" text type="danger" @click="removeIcon">移除图标</el-button>
-          </div>
-        </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入描述" />
-        </el-form-item>
-        <el-form-item label="排序" prop="sort">
-          <el-input-number v-model="form.sort" :min="0" :max="999" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="form.status">
-            <el-radio :value="1">启用</el-radio>
-            <el-radio :value="0">禁用</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
+      <CategoryForm
+        ref="categoryFormRef"
+        :model-value="form"
+        :icon-preview-url="iconPreviewUrl"
+        @icon-uploaded="handleIconUploaded"
+        @remove-icon="removeIcon"
+      />
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="previewVisible" title="图标预览" width="360px" append-to-body>
-      <img v-if="previewUrl" :src="previewUrl" class="preview-image" />
-    </el-dialog>
-  </div>
+    <BaseImagePreview v-model="previewVisible" :src="previewUrl" title="图标预览" width="360px" />
+  </BasePage>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, Refresh } from '@element-plus/icons-vue'
+import { onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import { getCategoryPage, addCategory, updateCategory, deleteCategory } from '@/api/category'
-import { uploadFile } from '@/api/upload'
 import { formatTime } from '@/utils/time'
-import { imageUtils } from '@/utils/imageUtils'
-import { ALLOWED_IMAGE_ACCEPT, allowedImageMessage, isAllowedImageFile } from '@/utils/uploadValidation'
+import { ENABLE_STATUS_OPTIONS } from '@/constants/status'
+import { normalizeCategory } from '@/services/domainAdapters'
+import { useCrudPage } from '@/composables/useCrudPage'
+import BasePage from '@/components/base/BasePage.vue'
+import BaseToolbar from '@/components/base/BaseToolbar.vue'
+import BasePagination from '@/components/base/BasePagination.vue'
+import BaseTableActions from '@/components/base/BaseTableActions.vue'
+import BaseImagePreview from '@/components/base/BaseImagePreview.vue'
+import StatusTag from '@/components/base/StatusTag.vue'
+import CategoryForm from '@/components/admin/CategoryForm.vue'
 
-const loading = ref(false)
-const submitLoading = ref(false)
-const tableData = ref([])
-const total = ref(0)
-const pageNum = ref(1)
-const pageSize = ref(10)
 const dialogVisible = ref(false)
+const submitLoading = ref(false)
+const categoryFormRef = ref(null)
+const iconPreviewUrl = ref('')
 const previewVisible = ref(false)
 const previewUrl = ref('')
-const iconPreviewUrl = ref('')
-let localIconPreviewUrl = ''
-const formRef = ref(null)
+const isEdit = ref(false)
+const dialogTitle = ref('添加分类')
 
-const searchForm = reactive({
-  keyword: ''
-})
-
-const form = reactive({
+const defaultForm = () => ({
   id: null,
   name: '',
   description: '',
@@ -160,17 +102,28 @@ const form = reactive({
   status: 1
 })
 
-const isEdit = ref(false)
-const dialogTitle = computed(() => isEdit.value ? '编辑分类' : '添加分类')
+const form = ref(defaultForm())
 
-const rules = {
-  name: [
-    { required: true, message: '请输入分类名称', trigger: 'blur' }
-  ]
-}
-
-const getIconUrl = icon => imageUtils.getImageUrl(icon, { width: 96, height: 96, quality: 80 })
-const getDisplayIconUrl = row => row.iconUrl || getIconUrl(row.icon)
+const {
+  loading,
+  tableData,
+  total,
+  pageNum,
+  pageSize,
+  searchForm,
+  loadData,
+  handleSearch,
+  handleReset,
+  handleSizeChange,
+  handleCurrentChange,
+  handleDelete
+} = useCrudPage({
+  fetchPage: getCategoryPage,
+  remove: deleteCategory,
+  searchDefaults: { keyword: '' },
+  normalize: normalizeCategory,
+  deleteMessage: '确定要删除该分类吗？'
+})
 
 const getCategoryEmoji = (name) => {
   if (!name) return '🌱'
@@ -190,81 +143,55 @@ const getCategoryEmoji = (name) => {
   return '🌱'
 }
 
-const loadData = async () => {
-  loading.value = true
-  try {
-    const res = await getCategoryPage({
-      pageNum: pageNum.value,
-      pageSize: pageSize.value,
-      keyword: searchForm.keyword
-    })
-    tableData.value = res.data.list
-    total.value = res.data.total
-  } catch (error) {
-    console.error(error)
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleSearch = () => {
-  pageNum.value = 1
-  loadData()
-}
-
-const handleReset = () => {
-  searchForm.keyword = ''
-  pageNum.value = 1
-  loadData()
-}
-
-const handleAdd = () => {
+const openCreateCategory = () => {
   isEdit.value = false
-  revokeLocalIconPreview()
+  dialogTitle.value = '添加分类'
   iconPreviewUrl.value = ''
-  Object.assign(form, {
-    id: null,
-    name: '',
-    description: '',
-    icon: '',
-    sort: 0,
-    status: 1
-  })
+  form.value = defaultForm()
   dialogVisible.value = true
 }
 
-const handleEdit = (row) => {
+const openEditCategory = (row) => {
   isEdit.value = true
-  revokeLocalIconPreview()
+  dialogTitle.value = '编辑分类'
   iconPreviewUrl.value = row.iconUrl || ''
-  Object.assign(form, {
+  form.value = {
     id: row.id,
     name: row.name,
-    description: row.description || '',
-    icon: row.icon || '',
+    description: row.description,
+    icon: row.icon,
     sort: row.sort,
     status: row.status
-  })
+  }
   dialogVisible.value = true
+}
+
+const handleIconUploaded = (result) => {
+  form.value.icon = result.objectKey
+  iconPreviewUrl.value = result.url
+  ElMessage.success('上传成功')
+}
+
+const removeIcon = () => {
+  form.value.icon = ''
+  iconPreviewUrl.value = ''
 }
 
 const handleSubmit = async () => {
-  const valid = await formRef.value.validate().catch(() => false)
+  const valid = await categoryFormRef.value?.validate?.().catch(() => false)
   if (!valid) return
 
   submitLoading.value = true
   try {
-    const payload = { ...form }
-    delete payload.iconUrl
     if (isEdit.value) {
-      await updateCategory(payload)
+      await updateCategory({ ...form.value })
       ElMessage.success('更新成功')
     } else {
-      await addCategory(payload)
+      await addCategory({ ...form.value })
       ElMessage.success('添加成功')
     }
     dialogVisible.value = false
-    loadData()
+    await loadData()
   } catch (error) {
     console.error(error)
   } finally {
@@ -272,65 +199,11 @@ const handleSubmit = async () => {
   }
 }
 
-const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该分类吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(async () => {
-    await deleteCategory(row.id)
-    ElMessage.success('删除成功')
-    loadData()
-  }).catch(() => {})
-}
-
-const removeIcon = () => {
-  revokeLocalIconPreview()
-  form.icon = ''
-  iconPreviewUrl.value = ''
-}
-
-const revokeLocalIconPreview = () => {
-  if (localIconPreviewUrl) {
-    URL.revokeObjectURL(localIconPreviewUrl)
-    localIconPreviewUrl = ''
-  }
-}
-
-const beforeUpload = (file) => {
-  const isImage = isAllowedImageFile(file)
-  const isLt2M = file.size / 1024 / 1024 < 2
-
-  if (!isImage) {
-    ElMessage.error(allowedImageMessage)
-    return false
-  }
-  if (!isLt2M) {
-    ElMessage.error('图标大小不能超过 2MB')
-    return false
-  }
-  return true
-}
-
-const handleUpload = async (options) => {
-  revokeLocalIconPreview()
-  localIconPreviewUrl = URL.createObjectURL(options.file)
-  iconPreviewUrl.value = localIconPreviewUrl
+const deleteCategoryRow = async (row) => {
   try {
-    const res = await uploadFile(options.file)
-    const data = res.data || {}
-    form.icon = data.objectKey || data.url || ''
-    if (data.url) {
-      revokeLocalIconPreview()
-      iconPreviewUrl.value = data.url
-    }
-    options.onSuccess?.(res)
-    ElMessage.success('上传成功')
+    await handleDelete(row, () => ElMessage.success('删除成功'))
   } catch (error) {
-    console.error(error)
-    revokeLocalIconPreview()
-    iconPreviewUrl.value = form.icon ? getIconUrl(form.icon) : ''
-    options.onError?.(error)
+    if (error !== 'cancel') console.error(error)
   }
 }
 
@@ -339,93 +212,18 @@ const previewImage = (url) => {
   previewVisible.value = true
 }
 
-onMounted(() => {
-  loadData()
-})
-
-onUnmounted(() => {
-  revokeLocalIconPreview()
-})
+onMounted(loadData)
 </script>
 
 <style scoped>
-.page-container {
-  padding: 0;
-}
-
-.category-thumb,
-.empty-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-}
-
-.category-thumb {
-  object-fit: cover;
-  cursor: pointer;
-  border: 1px solid #e7ece2;
-  background: #f6f8f3;
-}
-
 .empty-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #f1f5ec;
-  font-size: 24px;
-}
-
-.icon-editor {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.icon-uploader {
-  width: 96px;
-  height: 96px;
-  border: 1px dashed #cfd8c8;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.icon-uploader:hover {
-  border-color: var(--color-primary);
-}
-
-.icon-uploader :deep(.el-upload) {
-  width: 100%;
-  height: 100%;
-}
-
-.upload-trigger,
-.upload-placeholder {
-  width: 100%;
-  height: 100%;
-}
-
-.upload-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  color: #7a8676;
-  font-size: 12px;
-  background: #f7faf3;
-}
-
-.upload-preview {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.preview-image {
-  width: 100%;
-  max-height: 320px;
-  object-fit: contain;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-bg);
+  font-size: 22px;
 }
 </style>

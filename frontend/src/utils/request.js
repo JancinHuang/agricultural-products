@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
 import router from '@/router'
 import { clearAuth, getToken } from '@/utils/auth'
+import { notify } from '@/services/uiFeedback'
 
 const request = axios.create({
   baseURL: '/api',
@@ -32,9 +32,9 @@ request.interceptors.response.use(
     if (res.code !== 200) {
       if (res.code === 401) {
         clearAuthAndRedirect()
-        ElMessage.error('登录已过期，请重新登录')
+        notify.error('登录已过期，请重新登录')
       } else {
-        ElMessage.error(res.message || '请求失败')
+        notify.error(res.message || '请求失败')
       }
       return Promise.reject(new Error(res.message || '请求失败'))
     }
@@ -43,10 +43,10 @@ request.interceptors.response.use(
   error => {
     if (error.response?.status === 401) {
       clearAuthAndRedirect()
-      ElMessage.error('登录已过期，请重新登录')
+      notify.error('登录已过期，请重新登录')
       return Promise.reject(error)
     }
-    ElMessage.error(error.message || '网络错误')
+    notify.error(error.message || '网络错误')
     return Promise.reject(error)
   }
 )

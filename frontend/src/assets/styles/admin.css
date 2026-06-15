@@ -1,0 +1,4 @@
+.admin-upload-hint {
+  color: var(--color-text-placeholder);
+  font-size: var(--font-size-xs);
+}

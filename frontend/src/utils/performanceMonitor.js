@@ -30,7 +30,9 @@ class PerformanceMonitor {
     // 监控网络状况
     this.monitorNetworkStatus()
 
-    console.log('[PerformanceMonitor] Started monitoring')
+    if (import.meta.env.DEV) {
+      console.debug('[PerformanceMonitor] Started monitoring')
+    }
   }
 
   /**
@@ -40,7 +42,9 @@ class PerformanceMonitor {
     this.isMonitoring = false
     this.observers.forEach(obs => obs.disconnect())
     this.observers = []
-    console.log('[PerformanceMonitor] Stopped monitoring')
+    if (import.meta.env.DEV) {
+      console.debug('[PerformanceMonitor] Stopped monitoring')
+    }
   }
 
   /**
@@ -65,7 +69,9 @@ class PerformanceMonitor {
           
           // 如果加载时间超过3秒，记录为慢加载
           if (entry.duration > 3000) {
-            console.warn('[PerformanceMonitor] Slow image load:', metric)
+            if (import.meta.env.DEV) {
+              console.warn('[PerformanceMonitor] Slow image load:', metric)
+            }
           }
         }
       }
@@ -91,7 +97,9 @@ class PerformanceMonitor {
             timestamp: Date.now()
           }
           this.metrics.pageLoads.push(pageMetric)
-          console.log('[PerformanceMonitor] Page load metrics:', pageMetric)
+          if (import.meta.env.DEV) {
+            console.debug('[PerformanceMonitor] Page load metrics:', pageMetric)
+          }
         }
       }, 0)
     })
@@ -105,12 +113,14 @@ class PerformanceMonitor {
       const connection = navigator.connection
       
       const logNetworkStatus = () => {
-        console.log('[PerformanceMonitor] Network status:', {
-          effectiveType: connection.effectiveType,
-          downlink: connection.downlink,
-          rtt: connection.rtt,
-          saveData: connection.saveData
-        })
+        if (import.meta.env.DEV) {
+          console.debug('[PerformanceMonitor] Network status:', {
+            effectiveType: connection.effectiveType,
+            downlink: connection.downlink,
+            rtt: connection.rtt,
+            saveData: connection.saveData
+          })
+        }
       }
 
       logNetworkStatus()
@@ -167,7 +177,9 @@ class PerformanceMonitor {
    * 模拟3G网络环境进行测试
    */
   async simulate3GTest(imageUrls) {
-    console.log('[PerformanceMonitor] Starting 3G simulation test...')
+    if (import.meta.env.DEV) {
+      console.debug('[PerformanceMonitor] Starting 3G simulation test...')
+    }
     
     const results = []
     const startTime = performance.now()
@@ -211,7 +223,9 @@ class PerformanceMonitor {
       details: results
     }
     
-    console.log('[PerformanceMonitor] 3G Test Results:', report)
+    if (import.meta.env.DEV) {
+      console.debug('[PerformanceMonitor] 3G Test Results:', report)
+    }
     return report
   }
 }

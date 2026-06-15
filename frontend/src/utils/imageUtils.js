@@ -458,7 +458,9 @@ export const imageUtils = {
     img.onload = () => {
       const duration = performance.now() - startTime
       imagePerformance.record(url, duration, true)
-      console.log('[Image Loaded]', { url, duration: `${duration.toFixed(2)}ms` })
+      if (import.meta.env.DEV) {
+        console.debug('[Image Loaded]', { url, duration: `${duration.toFixed(2)}ms` })
+      }
     }
     
     img.onerror = (event) => {

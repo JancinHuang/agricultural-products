@@ -1,0 +1,38 @@
+.table-image,
+.category-thumb,
+.banner-thumb,
+.upload-preview,
+.preview-image {
+  object-fit: cover;
+}
+
+.table-image {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+}
+
+.category-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.banner-thumb {
+  width: 120px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.preview-image {
+  width: 100%;
+  display: block;
+  border-radius: var(--radius-sm);
+}
+
+.time-cell {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
