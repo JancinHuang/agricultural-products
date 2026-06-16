@@ -1,21 +1,22 @@
 <template>
   <div class="checkout-summary">
-    <el-button @click="$emit('back')">
+    <BaseButton @click="$emit('back')">
       <el-icon><ArrowLeft /></el-icon>
       返回购物车
-    </el-button>
+    </BaseButton>
     <div class="checkout-summary__right">
       <span class="checkout-summary__text">共 <em>{{ totalCount }}</em> 件商品</span>
       <span class="checkout-summary__price">应付：<PriceText :value="totalPrice" /></span>
-      <el-button type="primary" size="large" :loading="submitting" class="checkout-summary__submit" @click="$emit('submit')">
+      <BaseButton type="primary" size="large" :loading="submitting" class="checkout-summary__submit" @click="$emit('submit')">
         提交订单
-      </el-button>
+      </BaseButton>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ArrowLeft } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 import PriceText from '@/components/base/PriceText.vue'
 
 defineProps({

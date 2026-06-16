@@ -3,25 +3,25 @@
     <AuthBrandPanel />
     <div class="register-right">
       <AuthFormShell title="创建账号" subtitle="填写以下信息完成注册">
-        <el-form ref="formRef" :model="form" :rules="rules" class="register-form">
-          <el-form-item prop="username">
-            <el-input
+        <BaseForm ref="formRef" :model="form" :rules="rules" class="register-form">
+          <BaseFormItem prop="username">
+            <BaseInput
               v-model="form.username"
               placeholder="请输入用户名"
               size="large"
               :prefix-icon="User"
             />
-          </el-form-item>
-          <el-form-item prop="nickname">
-            <el-input
+          </BaseFormItem>
+          <BaseFormItem prop="nickname">
+            <BaseInput
               v-model="form.nickname"
               placeholder="请输入昵称"
               size="large"
               :prefix-icon="UserFilled"
             />
-          </el-form-item>
-          <el-form-item prop="password">
-            <el-input
+          </BaseFormItem>
+          <BaseFormItem prop="password">
+            <BaseInput
               v-model="form.password"
               type="password"
               placeholder="请输入密码"
@@ -29,9 +29,9 @@
               :prefix-icon="Lock"
               show-password
             />
-          </el-form-item>
-          <el-form-item prop="confirmPassword">
-            <el-input
+          </BaseFormItem>
+          <BaseFormItem prop="confirmPassword">
+            <BaseInput
               v-model="form.confirmPassword"
               type="password"
               placeholder="请确认密码"
@@ -39,25 +39,25 @@
               :prefix-icon="Lock"
               show-password
             />
-          </el-form-item>
-          <el-form-item prop="phone">
-            <el-input
+          </BaseFormItem>
+          <BaseFormItem prop="phone">
+            <BaseInput
               v-model="form.phone"
               placeholder="请输入手机号"
               size="large"
               :prefix-icon="Phone"
             />
-          </el-form-item>
-          <el-form-item prop="email">
-            <el-input
+          </BaseFormItem>
+          <BaseFormItem prop="email">
+            <BaseInput
               v-model="form.email"
               placeholder="请输入邮箱"
               size="large"
               :prefix-icon="Message"
             />
-          </el-form-item>
-          <el-form-item>
-            <el-button
+          </BaseFormItem>
+          <BaseFormItem>
+            <BaseButton
               type="primary"
               size="large"
               class="register-btn"
@@ -65,9 +65,9 @@
               @click="handleRegister"
             >
               注 册
-            </el-button>
-          </el-form-item>
-        </el-form>
+            </BaseButton>
+          </BaseFormItem>
+        </BaseForm>
         <template #footer>
           <span>已有账号？</span>
           <router-link to="/login">立即登录</router-link>
@@ -82,6 +82,10 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, UserFilled, Lock, Phone, Message } from '@element-plus/icons-vue'
 import { register } from '@/api/auth'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseForm from '@/components/base/BaseForm.vue'
+import BaseFormItem from '@/components/base/BaseFormItem.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
 import AuthBrandPanel from '@/components/business/AuthBrandPanel.vue'
 import AuthFormShell from '@/components/business/AuthFormShell.vue'
 import { notify } from '@/services/uiFeedback'

@@ -2,16 +2,16 @@
   <div class="cart-container">
     <div class="cart-empty" v-if="cartList.length === 0">
       <EmptyState description="购物车是空的，快去选购商品吧">
-        <el-button type="primary" @click="router.push('/shop')">去购物</el-button>
+        <BaseButton type="primary" @click="router.push('/shop')">去购物</BaseButton>
       </EmptyState>
     </div>
 
     <template v-else>
       <div class="cart-header">
         <h2>我的购物车 <span class="cart-count">（{{ cartList.length }} 件商品）</span></h2>
-        <el-button type="danger" text @click="handleDeleteSelected" :disabled="!hasSelected">
+        <BaseButton type="danger" text @click="handleDeleteSelected" :disabled="!hasSelected">
           <el-icon><Delete /></el-icon> 删除选中
-        </el-button>
+        </BaseButton>
       </div>
 
       <div class="cart-list" v-loading="loading">
@@ -42,6 +42,7 @@ import { onMounted } from 'vue'
 import { Delete } from '@element-plus/icons-vue'
 import CartItem from '@/components/shop/CartItem.vue'
 import CartSummaryBar from '@/components/shop/CartSummaryBar.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 import EmptyState from '@/components/base/EmptyState.vue'
 import { useCartPage } from '@/composables/useCartPage'
 

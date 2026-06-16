@@ -1,7 +1,7 @@
 <template>
   <div class="chat-input-area">
     <div class="chat-input-area__wrapper">
-      <el-input
+      <BaseInput
         :model-value="modelValue"
         type="textarea"
         :rows="2"
@@ -10,7 +10,7 @@
         @update:model-value="$emit('update:modelValue', $event)"
         @keydown.enter.exact.prevent="$emit('send')"
       />
-      <el-button
+      <BaseButton
         type="primary"
         :loading="waiting || typing"
         :disabled="!modelValue.trim() || waiting || typing"
@@ -18,13 +18,15 @@
       >
         <el-icon v-if="!waiting && !typing"><Promotion /></el-icon>
         {{ waiting ? '思考中...' : typing ? '回复中...' : '发送' }}
-      </el-button>
+      </BaseButton>
     </div>
   </div>
 </template>
 
 <script setup>
 import { Promotion } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
 
 defineProps({
   modelValue: {

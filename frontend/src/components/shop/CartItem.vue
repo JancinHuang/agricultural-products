@@ -1,6 +1,6 @@
 <template>
   <div class="cart-item">
-    <el-checkbox :model-value="item.selected === 1" @change="$emit('select', item, $event)" />
+    <BaseCheckbox :model-value="item.selected === 1" @change="$emit('select', item, $event)" />
 
     <img
       :src="imageUrl"
@@ -13,12 +13,12 @@
       <h4 class="cart-item__name" @click="$emit('open', item)">
         {{ item.productName }}
       </h4>
-      <el-tag v-if="item.productStatus !== 1" type="danger" size="small">已下架</el-tag>
+    <BaseTag v-if="item.productStatus !== 1" type="danger" size="small">已下架</BaseTag>
     </div>
 
     <PriceText :value="item.price" class="cart-item__price" />
 
-    <el-input-number
+    <BaseInputNumber
       :model-value="item.quantity"
       :min="1"
       :max="item.productStock"
@@ -28,12 +28,16 @@
 
     <PriceText :value="subtotal" class="cart-item__subtotal" />
 
-    <el-button type="danger" link @click="$emit('delete', item)">删除</el-button>
+    <BaseButton type="danger" link @click="$emit('delete', item)">删除</BaseButton>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseCheckbox from '@/components/base/BaseCheckbox.vue'
+import BaseInputNumber from '@/components/base/BaseInputNumber.vue'
+import BaseTag from '@/components/base/BaseTag.vue'
 import PriceText from '@/components/base/PriceText.vue'
 import { imageUtils } from '@/utils/imageUtils'
 

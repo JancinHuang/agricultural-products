@@ -1,19 +1,22 @@
 <template>
   <div class="cart-footer">
     <div class="footer-left">
-      <el-checkbox :model-value="selectAll" @change="$emit('select-all', $event)">全选</el-checkbox>
+      <BaseCheckbox :model-value="selectAll" @change="$emit('select-all', $event)">全选</BaseCheckbox>
     </div>
     <div class="footer-right">
       <span class="selected-info">已选择 <em>{{ selectedCount }}</em> 件商品</span>
       <span class="total-price">合计：<em>¥{{ totalPrice.toFixed(2) }}</em></span>
-      <el-button type="primary" size="large" :disabled="selectedCount === 0" @click="$emit('checkout')">
+      <BaseButton type="primary" size="large" :disabled="selectedCount === 0" @click="$emit('checkout')">
         去结算
-      </el-button>
+      </BaseButton>
     </div>
   </div>
 </template>
 
 <script setup>
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseCheckbox from '@/components/base/BaseCheckbox.vue'
+
 defineProps({
   selectAll: {
     type: Boolean,

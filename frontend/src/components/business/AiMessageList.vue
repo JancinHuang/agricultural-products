@@ -6,7 +6,7 @@
         <p>你好！我是助农商城的AI购物助手 🌿</p>
         <p>我可以帮你推荐商品、比较价格、了解产地信息。试试下面的问题吧：</p>
         <div class="quick-actions">
-          <el-button
+          <BaseButton
             v-for="action in quickActions"
             :key="action.text"
             size="small"
@@ -14,7 +14,7 @@
             @click="$emit('quick', action.prompt)"
           >
             {{ action.text }}
-          </el-button>
+          </BaseButton>
         </div>
       </div>
     </div>
@@ -44,6 +44,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 const props = defineProps({
   modelValue: {

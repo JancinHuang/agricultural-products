@@ -1,9 +1,16 @@
-import * as echarts from 'echarts'
-
 export const money = value => `¥${Number(value || 0).toLocaleString('zh-CN', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2
 })}`
+
+const linearGradient = (x, y, x2, y2, colorStops) => ({
+  type: 'linear',
+  x,
+  y,
+  x2,
+  y2,
+  colorStops
+})
 
 export const createSalesOption = data => ({
   tooltip: { trigger: 'axis', valueFormatter: value => money(value) },
@@ -16,7 +23,7 @@ export const createSalesOption = data => ({
     smooth: true,
     data: data.map(item => Number(item.value || 0)),
     areaStyle: {
-      color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      color: linearGradient(0, 0, 0, 1, [
         { offset: 0, color: 'rgba(46, 125, 50, 0.5)' },
         { offset: 1, color: 'rgba(46, 125, 50, 0.1)' }
       ])
@@ -101,7 +108,7 @@ export const createHotProductsOption = data => ({
     type: 'bar',
     data: data.map(item => Number(item.sales || 0)).reverse(),
     itemStyle: {
-      color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+      color: linearGradient(0, 0, 1, 0, [
         { offset: 0, color: '#2e7d32' },
         { offset: 1, color: '#81c784' }
       ])

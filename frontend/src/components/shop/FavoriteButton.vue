@@ -1,12 +1,13 @@
 <template>
-  <el-button :type="active ? 'danger' : 'default'" :size="size" @click="$emit('toggle')">
+  <BaseButton :type="active ? 'danger' : 'default'" :size="size" @click="$emit('toggle')">
     <el-icon><Star /></el-icon>
     {{ active ? activeText : inactiveText }}
-  </el-button>
+  </BaseButton>
 </template>
 
 <script setup>
 import { Star } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 defineProps({
   active: {

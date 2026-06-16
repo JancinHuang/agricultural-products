@@ -15,7 +15,7 @@
         {{ displayBadge }}
       </span>
       <div class="product-card__overlay">
-        <el-button type="primary" size="small" @click.stop="$emit('preview', product)">快速查看</el-button>
+        <BaseButton type="primary" size="small" @click.stop="$emit('preview', product)">快速查看</BaseButton>
       </div>
     </div>
     <div class="product-card__body">
@@ -29,10 +29,10 @@
         <span class="product-card__sales">已售{{ product.sales || 0 }}</span>
       </div>
       <div class="product-card__footer">
-        <el-tag v-if="product.stock <= 0" type="danger" size="small">已售罄</el-tag>
-        <el-tag v-else-if="product.stock < 10" type="warning" size="small">仅剩{{ product.stock }}</el-tag>
+        <BaseTag v-if="product.stock <= 0" type="danger" size="small">已售罄</BaseTag>
+        <BaseTag v-else-if="product.stock < 10" type="warning" size="small">仅剩{{ product.stock }}</BaseTag>
         <span v-else>库存 {{ product.stock ?? 0 }}</span>
-        <el-button
+        <BaseButton
           v-if="product.status === 1 && product.stock > 0"
           type="primary"
           size="small"
@@ -40,8 +40,8 @@
           @click.stop="$emit('add-cart', product)"
         >
           加入购物车
-        </el-button>
-        <el-button v-else-if="product.status !== 1" type="info" size="small" disabled>商品已下架</el-button>
+        </BaseButton>
+        <BaseButton v-else-if="product.status !== 1" type="info" size="small" disabled>商品已下架</BaseButton>
       </div>
     </div>
   </article>
@@ -50,6 +50,8 @@
 <script setup>
 import { computed } from 'vue'
 import ProductImage from '@/components/ProductImage.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseTag from '@/components/base/BaseTag.vue'
 import PriceText from '@/components/base/PriceText.vue'
 
 const props = defineProps({

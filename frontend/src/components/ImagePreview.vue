@@ -1,5 +1,5 @@
 <template>
-  <el-dialog
+  <BaseDialog
     v-model="visible"
     :show-close="false"
     class="image-preview-dialog"
@@ -9,25 +9,25 @@
       <div class="preview-header">
         <span class="preview-title">{{ currentIndex + 1 }} / {{ imageList.length }}</span>
         <div class="preview-controls">
-          <el-button-group>
-            <el-button @click="zoomIn" :disabled="scale >= 3">
+          <BaseButtonGroup>
+            <BaseButton @click="zoomIn" :disabled="scale >= 3">
               <el-icon><ZoomIn /></el-icon>
-            </el-button>
-            <el-button @click="zoomOut" :disabled="scale <= 1">
+            </BaseButton>
+            <BaseButton @click="zoomOut" :disabled="scale <= 1">
               <el-icon><ZoomOut /></el-icon>
-            </el-button>
-            <el-button @click="resetZoom">
+            </BaseButton>
+            <BaseButton @click="resetZoom">
               <el-icon><RefreshRight /></el-icon>
-            </el-button>
-          </el-button-group>
-          <el-button-group>
-            <el-button @click="rotate(-90)">
+            </BaseButton>
+          </BaseButtonGroup>
+          <BaseButtonGroup>
+            <BaseButton @click="rotate(-90)">
               <el-icon><RefreshLeft /></el-icon>
-            </el-button>
-            <el-button @click="rotate(90)">
+            </BaseButton>
+            <BaseButton @click="rotate(90)">
               <el-icon><RefreshRight /></el-icon>
-            </el-button>
-          </el-button-group>
+            </BaseButton>
+          </BaseButtonGroup>
         </div>
       </div>
       <div
@@ -54,13 +54,13 @@
 
     <template #footer v-if="imageList.length > 1">
       <div class="preview-footer">
-        <el-button
+        <BaseButton
           :disabled="currentIndex === 0"
           @click="prev"
         >
           <el-icon><ArrowLeft /></el-icon>
           上一张
-        </el-button>
+        </BaseButton>
         <div class="preview-thumbnails">
           <div
             v-for="(img, index) in imageList"
@@ -71,16 +71,16 @@
             <img :src="getThumbUrl(img)" />
           </div>
         </div>
-        <el-button
+        <BaseButton
           :disabled="currentIndex === imageList.length - 1"
           @click="next"
         >
           下一张
           <el-icon><ArrowRight /></el-icon>
-        </el-button>
+        </BaseButton>
       </div>
     </template>
-  </el-dialog>
+  </BaseDialog>
 </template>
 
 <script setup>
@@ -89,6 +89,9 @@ import {
   ZoomIn, ZoomOut, RefreshLeft, RefreshRight,
   ArrowLeft, ArrowRight
 } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseButtonGroup from '@/components/base/BaseButtonGroup.vue'
+import BaseDialog from '@/components/base/BaseDialog.vue'
 import { imageUtils } from '@/utils/imageUtils'
 
 const props = defineProps({

@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="innerVisible" title="选择要评价的商品" width="560px" append-to-body>
+  <BaseDialog v-model="innerVisible" title="选择要评价的商品" width="560px" append-to-body>
     <div v-if="items.length" class="review-picker">
       <button
         v-for="item in items"
@@ -17,11 +17,12 @@
       </button>
     </div>
     <EmptyState v-else description="暂无可评价商品" />
-  </el-dialog>
+  </BaseDialog>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import BaseDialog from '@/components/base/BaseDialog.vue'
 import EmptyState from '@/components/base/EmptyState.vue'
 import { imageUtils } from '@/utils/imageUtils'
 

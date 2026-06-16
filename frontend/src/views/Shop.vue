@@ -17,7 +17,7 @@
     />
 
     <div class="pagination-wrapper" v-if="total > 0">
-      <el-pagination
+      <BasePagination
         v-model:current-page="pageNum"
         v-model:page-size="pageSize"
         :total="total"
@@ -42,6 +42,7 @@ import { onMounted } from 'vue'
 import ProductGrid from '@/components/shop/ProductGrid.vue'
 import ShopToolbar from '@/components/shop/ShopToolbar.vue'
 import ImagePreview from '@/components/ImagePreview.vue'
+import BasePagination from '@/components/base/BasePagination.vue'
 import { useShopProducts } from '@/composables/useShopProducts'
 
 const {

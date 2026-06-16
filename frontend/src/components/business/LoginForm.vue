@@ -5,12 +5,12 @@
         <el-icon :size="28"><Shop /></el-icon>
       </div>
     </template>
-    <el-form ref="formRef" :model="model" :rules="rules" class="login-form">
-      <el-form-item prop="username">
-        <el-input v-model="model.username" placeholder="请输入用户名" :prefix-icon="User" />
-      </el-form-item>
-      <el-form-item prop="password">
-        <el-input
+    <BaseForm ref="formRef" :model="model" :rules="rules" class="login-form">
+      <BaseFormItem prop="username">
+        <BaseInput v-model="model.username" placeholder="请输入用户名" :prefix-icon="User" />
+      </BaseFormItem>
+      <BaseFormItem prop="password">
+        <BaseInput
           v-model="model.password"
           type="password"
           placeholder="请输入密码"
@@ -18,13 +18,13 @@
           show-password
           @keyup.enter="$emit('submit')"
         />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" class="login-btn" :loading="loading" @click="$emit('submit')">
+      </BaseFormItem>
+      <BaseFormItem>
+        <BaseButton type="primary" class="login-btn" :loading="loading" @click="$emit('submit')">
           登录
-        </el-button>
-      </el-form-item>
-    </el-form>
+        </BaseButton>
+      </BaseFormItem>
+    </BaseForm>
     <template #footer>
       <span>还没有账号？</span>
       <router-link to="/register">立即注册</router-link>
@@ -35,6 +35,10 @@
 <script setup>
 import { ref } from 'vue'
 import { Lock, Shop, User } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseForm from '@/components/base/BaseForm.vue'
+import BaseFormItem from '@/components/base/BaseFormItem.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
 import AuthFormShell from '@/components/business/AuthFormShell.vue'
 
 defineProps({

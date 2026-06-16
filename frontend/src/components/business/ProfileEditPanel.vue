@@ -2,52 +2,52 @@
   <div class="edit-panel">
     <el-tabs v-model="activeTab" class="edit-tabs">
       <el-tab-pane label="修改信息" name="info">
-        <el-form
+        <BaseForm
           ref="infoFormRef"
           :model="infoForm"
           :rules="infoRules"
           label-width="80px"
           class="edit-form"
         >
-          <el-form-item label="昵称" prop="nickname">
-            <el-input v-model="infoForm.nickname" placeholder="请输入昵称" />
-          </el-form-item>
-          <el-form-item label="手机号" prop="phone">
-            <el-input v-model="infoForm.phone" placeholder="请输入手机号" />
-          </el-form-item>
-          <el-form-item label="邮箱" prop="email">
-            <el-input v-model="infoForm.email" placeholder="请输入邮箱" />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" :loading="infoLoading" @click="$emit('save-info')">
+          <BaseFormItem label="昵称" prop="nickname">
+            <BaseInput v-model="infoForm.nickname" placeholder="请输入昵称" />
+          </BaseFormItem>
+          <BaseFormItem label="手机号" prop="phone">
+            <BaseInput v-model="infoForm.phone" placeholder="请输入手机号" />
+          </BaseFormItem>
+          <BaseFormItem label="邮箱" prop="email">
+            <BaseInput v-model="infoForm.email" placeholder="请输入邮箱" />
+          </BaseFormItem>
+          <BaseFormItem>
+            <BaseButton type="primary" :loading="infoLoading" @click="$emit('save-info')">
               保存修改
-            </el-button>
-          </el-form-item>
-        </el-form>
+            </BaseButton>
+          </BaseFormItem>
+        </BaseForm>
       </el-tab-pane>
       <el-tab-pane label="修改密码" name="password">
-        <el-form
+        <BaseForm
           ref="pwdFormRef"
           :model="pwdForm"
           :rules="pwdRules"
           label-width="100px"
           class="edit-form"
         >
-          <el-form-item label="原密码" prop="oldPassword">
-            <el-input v-model="pwdForm.oldPassword" type="password" show-password placeholder="请输入原密码" />
-          </el-form-item>
-          <el-form-item label="新密码" prop="newPassword">
-            <el-input v-model="pwdForm.newPassword" type="password" show-password placeholder="请输入新密码" />
-          </el-form-item>
-          <el-form-item label="确认新密码" prop="confirmPassword">
-            <el-input v-model="pwdForm.confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" :loading="pwdLoading" @click="$emit('save-password')">
+          <BaseFormItem label="原密码" prop="oldPassword">
+            <BaseInput v-model="pwdForm.oldPassword" type="password" show-password placeholder="请输入原密码" />
+          </BaseFormItem>
+          <BaseFormItem label="新密码" prop="newPassword">
+            <BaseInput v-model="pwdForm.newPassword" type="password" show-password placeholder="请输入新密码" />
+          </BaseFormItem>
+          <BaseFormItem label="确认新密码" prop="confirmPassword">
+            <BaseInput v-model="pwdForm.confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
+          </BaseFormItem>
+          <BaseFormItem>
+            <BaseButton type="primary" :loading="pwdLoading" @click="$emit('save-password')">
               修改密码
-            </el-button>
-          </el-form-item>
-        </el-form>
+            </BaseButton>
+          </BaseFormItem>
+        </BaseForm>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -55,6 +55,10 @@
 
 <script setup>
 import { ref } from 'vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseForm from '@/components/base/BaseForm.vue'
+import BaseFormItem from '@/components/base/BaseFormItem.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
 
 defineProps({
   infoForm: {

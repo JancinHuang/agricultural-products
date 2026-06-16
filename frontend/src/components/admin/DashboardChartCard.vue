@@ -11,7 +11,20 @@
 
 <script setup>
 import { onBeforeUnmount, ref, watch, nextTick } from 'vue'
-import * as echarts from 'echarts'
+import { use, init } from 'echarts/core'
+import { BarChart, LineChart, PieChart } from 'echarts/charts'
+import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+
+use([
+  BarChart,
+  LineChart,
+  PieChart,
+  GridComponent,
+  LegendComponent,
+  TooltipComponent,
+  CanvasRenderer
+])
 
 const props = defineProps({
   title: {
@@ -31,7 +44,7 @@ const render = async () => {
   if (!props.option) return
   await nextTick()
   if (!chartRef.value) return
-  if (!chart) chart = echarts.init(chartRef.value)
+  if (!chart) chart = init(chartRef.value)
   chart.setOption(props.option, true)
 }
 

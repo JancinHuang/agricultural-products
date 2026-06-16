@@ -3,7 +3,7 @@
     <div class="home-section__inner">
       <div class="home-section__header">
         <h2>商品分类</h2>
-        <el-button text type="primary" @click="$emit('open-all')">浏览全部</el-button>
+        <BaseButton text type="primary" @click="$emit('open-all')">浏览全部</BaseButton>
       </div>
       <div class="home-category-grid" v-loading="loading">
         <button
@@ -26,6 +26,7 @@
 
 <script setup>
 import { imageUtils } from '@/utils/imageUtils'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 defineProps({
   categories: {

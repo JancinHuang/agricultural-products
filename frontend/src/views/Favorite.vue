@@ -8,9 +8,9 @@
 
       <!-- 空状态 -->
       <div class="empty-state" v-if="!loading && favorites.length === 0">
-        <el-empty description="还没有收藏任何商品">
-          <el-button type="primary" @click="router.push('/shop')">去逛逛</el-button>
-        </el-empty>
+        <EmptyState description="还没有收藏任何商品">
+          <BaseButton type="primary" @click="router.push('/shop')">去逛逛</BaseButton>
+        </EmptyState>
       </div>
 
       <!-- 收藏列表 -->
@@ -32,6 +32,8 @@
 <script setup>
 import { onMounted } from 'vue'
 import FavoriteProductCard from '@/components/shop/FavoriteProductCard.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import EmptyState from '@/components/base/EmptyState.vue'
 import { useFavorites } from '@/composables/useFavorites'
 
 const {

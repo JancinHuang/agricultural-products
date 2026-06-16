@@ -7,15 +7,16 @@
         <p>智能推荐，帮你选好物</p>
       </div>
     </div>
-    <el-button text :disabled="disabled" @click="$emit('clear')">
+    <BaseButton text :disabled="disabled" @click="$emit('clear')">
       <el-icon><Delete /></el-icon>
       清空对话
-    </el-button>
+    </BaseButton>
   </div>
 </template>
 
 <script setup>
 import { Delete } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 defineProps({
   disabled: {

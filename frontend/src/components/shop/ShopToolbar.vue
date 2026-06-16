@@ -1,7 +1,7 @@
 <template>
   <div class="shop-toolbar">
     <div class="toolbar-left">
-      <el-input
+      <BaseInput
         v-model="form.keyword"
         placeholder="搜索商品..."
         :prefix-icon="Search"
@@ -9,22 +9,26 @@
         class="toolbar-search"
         @keyup.enter="$emit('search')"
       />
-      <el-select v-model="form.categoryId" placeholder="全部分类" clearable class="toolbar-select">
-        <el-option v-for="cat in categories" :key="cat.id" :label="cat.name" :value="cat.id" />
-      </el-select>
-      <el-select v-model="form.orderBy" placeholder="默认排序" class="toolbar-select">
-        <el-option v-for="option in sortOptions" :key="option.value" :label="option.label" :value="option.value" />
-      </el-select>
+      <BaseSelect v-model="form.categoryId" placeholder="全部分类" clearable class="toolbar-select">
+        <BaseOption v-for="cat in categories" :key="cat.id" :label="cat.name" :value="cat.id" />
+      </BaseSelect>
+      <BaseSelect v-model="form.orderBy" placeholder="默认排序" class="toolbar-select">
+        <BaseOption v-for="option in sortOptions" :key="option.value" :label="option.label" :value="option.value" />
+      </BaseSelect>
     </div>
     <div class="toolbar-right">
       <span v-if="total > 0" class="product-count">共 <em>{{ total }}</em> 件商品</span>
-      <el-button type="primary" :icon="Search" @click="$emit('search')">搜索</el-button>
+      <BaseButton type="primary" :icon="Search" @click="$emit('search')">搜索</BaseButton>
     </div>
   </div>
 </template>
 
 <script setup>
 import { Search } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import BaseOption from '@/components/base/BaseOption.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
 
 defineProps({
   form: {

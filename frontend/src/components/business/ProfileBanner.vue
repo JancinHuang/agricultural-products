@@ -7,9 +7,9 @@
       <div class="banner-info">
         <h2>{{ user?.nickname || user?.username }}</h2>
         <div class="banner-meta">
-          <el-tag :type="user?.role === 1 ? 'danger' : ''" size="small" effect="dark">
+          <BaseTag :type="user?.role === 1 ? 'danger' : ''" size="small" effect="dark">
             {{ user?.role === 1 ? '管理员' : '普通用户' }}
-          </el-tag>
+          </BaseTag>
           <span class="join-time">
             <el-icon><Clock /></el-icon>
             {{ formatTime(user?.createTime) }} 加入
@@ -22,6 +22,7 @@
 
 <script setup>
 import { Clock, UserFilled } from '@element-plus/icons-vue'
+import BaseTag from '@/components/base/BaseTag.vue'
 import { formatTime } from '@/utils/time'
 
 defineProps({

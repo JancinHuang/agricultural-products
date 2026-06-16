@@ -19,7 +19,7 @@
         />
 
         <EmptyState v-if="!loading && filteredOrders.length === 0" description="暂无订单">
-          <el-button type="primary" @click="router.push('/shop')">去购物</el-button>
+          <BaseButton type="primary" @click="router.push('/shop')">去购物</BaseButton>
         </EmptyState>
       </div>
     </div>
@@ -47,6 +47,7 @@ import OrderPageHeader from '@/components/shop/OrderPageHeader.vue'
 import OrderStatusTabs from '@/components/shop/OrderStatusTabs.vue'
 import UserOrderDetailDialog from '@/components/shop/UserOrderDetailDialog.vue'
 import ReviewPickerDialog from '@/components/shop/ReviewPickerDialog.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 import EmptyState from '@/components/base/EmptyState.vue'
 import { useUserOrders } from '@/composables/useUserOrders'
 

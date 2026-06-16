@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="innerVisible" title="订单详情" width="820px" class="order-detail-dialog">
+  <BaseDialog v-model="innerVisible" title="订单详情" width="820px" class="order-detail-dialog">
     <div v-if="order" class="order-detail">
       <div class="order-detail__summary">
         <div class="order-detail__head">
@@ -65,11 +65,12 @@
         </div>
       </section>
     </div>
-  </el-dialog>
+  </BaseDialog>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import BaseDialog from '@/components/base/BaseDialog.vue'
 import StatusTag from '@/components/base/StatusTag.vue'
 import PriceText from '@/components/base/PriceText.vue'
 import { formatTime } from '@/utils/time'

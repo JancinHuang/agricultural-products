@@ -12,7 +12,7 @@
       <p class="product-detail-main__desc">{{ product.description }}</p>
 
       <div class="product-detail-main__rating">
-        <el-rate :model-value="avgRating" disabled show-score text-color="#ff9900" />
+        <BaseRate :model-value="avgRating" disabled show-score text-color="#ff9900" />
         <span>{{ reviewCount }} 条评价</span>
       </div>
 
@@ -44,10 +44,10 @@
       <div class="product-detail-main__actions">
         <div class="product-detail-main__quantity">
           <span>购买数量</span>
-          <el-input-number :model-value="quantity" :min="1" :max="product.stock" size="large" @change="$emit('update:quantity', $event)" />
+          <BaseInputNumber :model-value="quantity" :min="1" :max="product.stock" size="large" @change="$emit('update:quantity', $event)" />
         </div>
         <div class="product-detail-main__buttons">
-          <el-button
+          <BaseButton
             type="primary"
             size="large"
             :loading="adding"
@@ -57,8 +57,8 @@
           >
             <el-icon><ShoppingCart /></el-icon>
             {{ product.stock <= 0 ? '已售罄' : '加入购物车' }}
-          </el-button>
-          <el-button
+          </BaseButton>
+          <BaseButton
             :type="favorite ? 'danger' : 'default'"
             size="large"
             class="product-detail-main__favorite"
@@ -66,7 +66,7 @@
           >
             <el-icon><Star /></el-icon>
             {{ favorite ? '已收藏' : '收藏' }}
-          </el-button>
+          </BaseButton>
         </div>
       </div>
     </div>
@@ -75,6 +75,9 @@
 
 <script setup>
 import { ShoppingCart, Star } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseInputNumber from '@/components/base/BaseInputNumber.vue'
+import BaseRate from '@/components/base/BaseRate.vue'
 import ProductGallery from '@/components/shop/ProductGallery.vue'
 
 defineProps({

@@ -4,11 +4,13 @@
       <p class="eyebrow">{{ eyebrow }}</p>
       <h2>{{ title }}</h2>
     </div>
-    <el-button type="primary" plain @click="$emit('shop')">继续选购</el-button>
+    <BaseButton type="primary" plain @click="$emit('shop')">继续选购</BaseButton>
   </div>
 </template>
 
 <script setup>
+import BaseButton from '@/components/base/BaseButton.vue'
+
 defineProps({
   eyebrow: {
     type: String,

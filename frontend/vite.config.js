@@ -21,11 +21,26 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          vue: ['vue', 'vue-router', 'pinia'],
-          element: ['element-plus', '@element-plus/icons-vue'],
-          charts: ['echarts'],
-          markdown: ['marked']
+        manualChunks(id) {
+          if (id.includes('node_modules/zrender')) {
+            return 'zrender'
+          }
+
+          if (id.includes('node_modules/echarts')) {
+            return 'echarts'
+          }
+
+          if (id.includes('node_modules/vue') || id.includes('node_modules/vue-router') || id.includes('node_modules/pinia')) {
+            return 'vue'
+          }
+
+          if (id.includes('node_modules/element-plus') || id.includes('node_modules/@element-plus/icons-vue')) {
+            return 'element'
+          }
+
+          if (id.includes('node_modules/marked')) {
+            return 'markdown'
+          }
         }
       }
     }

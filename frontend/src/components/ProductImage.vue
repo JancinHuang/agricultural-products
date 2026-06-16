@@ -57,9 +57,9 @@
     >
       <el-icon :size="40"><Picture /></el-icon>
       <span>{{ errorText }}</span>
-      <el-button size="small" @click="retry" v-if="retryCount < maxRetries">
+      <BaseButton size="small" @click="retry" v-if="retryCount < maxRetries">
         {{ retryButtonText }}
-      </el-button>
+      </BaseButton>
     </div>
     
     <!-- 图片标题 -->
@@ -72,6 +72,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Picture } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 import { imageUtils, useLazyLoad } from '@/utils/imageUtils'
 
 // 1x1 透明 GIF 占位图

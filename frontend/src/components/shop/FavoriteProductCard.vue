@@ -3,12 +3,12 @@
     <div class="product-image-wrapper" @click="$emit('open', item.productId)">
       <img :src="getImageUrl(item.productImage)" :alt="item.productName" />
       <div class="product-status">
-        <el-tag v-if="item.productStatus !== 1" type="danger" size="small" effect="dark">已下架</el-tag>
+        <BaseTag v-if="item.productStatus !== 1" type="danger" size="small" effect="dark">已下架</BaseTag>
       </div>
       <div class="product-overlay">
-        <el-button type="primary" size="small" @click.stop="$emit('open', item.productId)">
+        <BaseButton type="primary" size="small" @click.stop="$emit('open', item.productId)">
           查看详情
-        </el-button>
+        </BaseButton>
       </div>
     </div>
     <div class="product-info">
@@ -17,10 +17,10 @@
       </h3>
       <div class="product-meta">
         <span class="product-price">¥{{ item.price }}</span>
-        <el-tag v-if="item.productStatus === 1" type="success" size="small">在售</el-tag>
+        <BaseTag v-if="item.productStatus === 1" type="success" size="small">在售</BaseTag>
       </div>
       <div class="product-actions">
-        <el-button
+        <BaseButton
           type="primary"
           size="small"
           :loading="adding"
@@ -28,10 +28,10 @@
           @click="$emit('add-cart', item)"
         >
           <el-icon><ShoppingCart /></el-icon> 加入购物车
-        </el-button>
-        <el-button size="small" class="remove-btn" @click="$emit('remove', item)">
+        </BaseButton>
+        <BaseButton size="small" class="remove-btn" @click="$emit('remove', item)">
           <el-icon><Delete /></el-icon>
-        </el-button>
+        </BaseButton>
       </div>
     </div>
   </div>
@@ -39,6 +39,8 @@
 
 <script setup>
 import { Delete, ShoppingCart } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseTag from '@/components/base/BaseTag.vue'
 import { imageUtils } from '@/utils/imageUtils'
 
 defineProps({

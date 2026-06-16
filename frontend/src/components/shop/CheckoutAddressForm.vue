@@ -4,26 +4,29 @@
       <el-icon><Location /></el-icon>
       <span>收货信息</span>
     </div>
-    <el-form ref="formRef" :model="modelValue" :rules="rules" label-width="90px" class="checkout-address-form">
-      <el-form-item label="收货人" prop="receiverName">
-        <el-input v-model="modelValue.receiverName" placeholder="请输入收货人姓名" />
-      </el-form-item>
-      <el-form-item label="联系电话" prop="receiverPhone">
-        <el-input v-model="modelValue.receiverPhone" placeholder="请输入联系电话" />
-      </el-form-item>
-      <el-form-item label="收货地址" prop="receiverAddress">
-        <el-input v-model="modelValue.receiverAddress" type="textarea" :rows="2" placeholder="请输入详细地址" />
-      </el-form-item>
-      <el-form-item label="备注">
-        <el-input v-model="modelValue.remark" placeholder="选填，可以告诉卖家您的特殊需求" />
-      </el-form-item>
-    </el-form>
+    <BaseForm ref="formRef" :model="modelValue" :rules="rules" label-width="90px" class="checkout-address-form">
+      <BaseFormItem label="收货人" prop="receiverName">
+        <BaseInput v-model="modelValue.receiverName" placeholder="请输入收货人姓名" />
+      </BaseFormItem>
+      <BaseFormItem label="联系电话" prop="receiverPhone">
+        <BaseInput v-model="modelValue.receiverPhone" placeholder="请输入联系电话" />
+      </BaseFormItem>
+      <BaseFormItem label="收货地址" prop="receiverAddress">
+        <BaseInput v-model="modelValue.receiverAddress" type="textarea" :rows="2" placeholder="请输入详细地址" />
+      </BaseFormItem>
+      <BaseFormItem label="备注">
+        <BaseInput v-model="modelValue.remark" placeholder="选填，可以告诉卖家您的特殊需求" />
+      </BaseFormItem>
+    </BaseForm>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { Location } from '@element-plus/icons-vue'
+import BaseForm from '@/components/base/BaseForm.vue'
+import BaseFormItem from '@/components/base/BaseFormItem.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
 
 defineProps({
   modelValue: {

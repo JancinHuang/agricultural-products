@@ -49,19 +49,19 @@
       </div>
 
       <div class="order-card__actions">
-        <el-button v-if="order.status === 0" type="primary" @click="$emit('pay', order)">立即支付</el-button>
-        <el-button v-if="order.status === 2" type="success" @click="$emit('confirm', order)">确认收货</el-button>
-        <el-button
+        <BaseButton v-if="order.status === 0" type="primary" @click="$emit('pay', order)">立即支付</BaseButton>
+        <BaseButton v-if="order.status === 2" type="success" @click="$emit('confirm', order)">确认收货</BaseButton>
+        <BaseButton
           v-if="order.status === 3"
           :type="fullyReviewed ? 'success' : 'primary'"
           :plain="fullyReviewed"
           @click="$emit('review', order)"
         >
           {{ fullyReviewed ? '已评价' : '去评价' }}
-        </el-button>
-        <el-button v-if="order.status === 0" plain @click="$emit('cancel', order)">取消订单</el-button>
-        <el-button plain @click="$emit('detail', order)">查看详情</el-button>
-        <el-button v-if="[2, 3].includes(order.status)" text @click="$emit('rebuy', order)">再买一单</el-button>
+        </BaseButton>
+        <BaseButton v-if="order.status === 0" plain @click="$emit('cancel', order)">取消订单</BaseButton>
+        <BaseButton plain @click="$emit('detail', order)">查看详情</BaseButton>
+        <BaseButton v-if="[2, 3].includes(order.status)" text @click="$emit('rebuy', order)">再买一单</BaseButton>
       </div>
     </div>
 
@@ -86,6 +86,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 import StatusTag from '@/components/base/StatusTag.vue'
 import PriceText from '@/components/base/PriceText.vue'
 import { formatTime } from '@/utils/time'

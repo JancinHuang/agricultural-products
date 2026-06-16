@@ -1,6 +1,6 @@
 <template>
-  <el-dialog v-model="innerVisible" title="回复评价" width="460px" append-to-body>
-    <el-input
+  <BaseDialog v-model="innerVisible" title="回复评价" width="460px" append-to-body>
+    <BaseInput
       v-model="form.content"
       type="textarea"
       :rows="4"
@@ -9,14 +9,17 @@
       placeholder="请输入回复内容"
     />
     <template #footer>
-      <el-button @click="innerVisible = false">取消</el-button>
-      <el-button type="primary" :loading="submitting" @click="$emit('submit')">提交</el-button>
+      <BaseButton @click="innerVisible = false">取消</BaseButton>
+      <BaseButton type="primary" :loading="submitting" @click="$emit('submit')">提交</BaseButton>
     </template>
-  </el-dialog>
+  </BaseDialog>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseDialog from '@/components/base/BaseDialog.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
 
 const props = defineProps({
   modelValue: {

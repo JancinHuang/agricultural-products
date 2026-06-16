@@ -3,10 +3,10 @@
     <div class="home-section__inner">
       <div class="home-section__header">
         <h2>{{ title }}</h2>
-        <el-button text type="primary" @click="$emit('more')">
+        <BaseButton text type="primary" @click="$emit('more')">
           查看更多
           <el-icon class="el-icon--right"><ArrowRight /></el-icon>
-        </el-button>
+        </BaseButton>
       </div>
 
       <div v-if="scrollable" class="home-products-rail" v-loading="loading">
@@ -45,6 +45,7 @@
 <script setup>
 import { ref } from 'vue'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 import ProductCard from '@/components/shop/ProductCard.vue'
 import ProductGrid from '@/components/shop/ProductGrid.vue'
 

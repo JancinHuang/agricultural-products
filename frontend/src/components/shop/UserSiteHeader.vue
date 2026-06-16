@@ -19,7 +19,7 @@
 
       <div class="header-right">
         <div class="header-search">
-          <el-input
+          <BaseInput
             v-model="keyword"
             placeholder="搜索商品..."
             :prefix-icon="Search"
@@ -80,6 +80,7 @@ import {
   User,
   UserFilled
 } from '@element-plus/icons-vue'
+import BaseInput from '@/components/base/BaseInput.vue'
 import { USER_NAV_ITEMS } from '@/constants/navigation'
 
 defineProps({

@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="innerVisible" title="订单详情" width="720px" top="5vh">
+  <BaseDialog v-model="innerVisible" title="订单详情" width="720px" top="5vh">
     <div v-if="detail" class="user-order-detail">
       <section class="user-order-detail__section">
         <h4>订单信息</h4>
@@ -51,14 +51,14 @@
               <span class="user-order-detail__product-price">¥{{ formatAmount(item.price) }} x {{ item.quantity }}</span>
             </div>
             <PriceText :value="item.subtotal" class="user-order-detail__subtotal" />
-            <el-button
+            <BaseButton
               v-if="detail.order.status === 3"
               :type="isItemReviewed(item) ? 'success' : 'primary'"
               link
               @click="$emit('review', detail.order, item)"
             >
               {{ isItemReviewed(item) ? '已评价' : '评价' }}
-            </el-button>
+            </BaseButton>
           </div>
         </div>
       </section>
@@ -67,11 +67,13 @@
         订单总额：<PriceText :value="detail.order.totalAmount" />
       </div>
     </div>
-  </el-dialog>
+  </BaseDialog>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseDialog from '@/components/base/BaseDialog.vue'
 import StatusTag from '@/components/base/StatusTag.vue'
 import PriceText from '@/components/base/PriceText.vue'
 import { formatTime } from '@/utils/time'

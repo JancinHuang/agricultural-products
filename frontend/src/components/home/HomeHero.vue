@@ -8,10 +8,10 @@
           <div class="home-hero__content">
             <h2>{{ slide.title }}</h2>
             <p>{{ slide.subtitle }}</p>
-            <el-button type="primary" size="large" round @click="$emit('open', slide.link || slide.linkUrl || '/shop')">
+            <BaseButton type="primary" size="large" round @click="$emit('open', slide.link || slide.linkUrl || '/shop')">
               {{ slide.btnText }}
               <el-icon class="el-icon--right"><ArrowRight /></el-icon>
-            </el-button>
+            </BaseButton>
           </div>
           <div class="home-hero__decoration">{{ slide.icon }}</div>
         </div>
@@ -22,6 +22,7 @@
 
 <script setup>
 import { ArrowRight } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 defineProps({
   slides: {

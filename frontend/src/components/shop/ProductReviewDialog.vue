@@ -1,16 +1,16 @@
 <template>
-  <el-dialog
+  <BaseDialog
     v-model="innerVisible"
     :title="isEditMode ? '编辑评价' : '发表评价'"
     width="520px"
     append-to-body
   >
-    <el-form label-width="80px">
-      <el-form-item label="评分">
-        <el-rate v-model="form.rating" />
-      </el-form-item>
-      <el-form-item label="评价内容">
-        <el-input
+    <BaseForm label-width="80px">
+      <BaseFormItem label="评分">
+        <BaseRate v-model="form.rating" />
+      </BaseFormItem>
+      <BaseFormItem label="评价内容">
+        <BaseInput
           v-model="form.content"
           type="textarea"
           :rows="5"
@@ -18,9 +18,9 @@
           show-word-limit
           placeholder="说说商品质量、包装、口感或使用体验"
         />
-      </el-form-item>
-      <el-form-item label="图片">
-        <el-upload
+      </BaseFormItem>
+      <BaseFormItem label="图片">
+        <BaseUpload
           v-model:file-list="imageList"
           class="review-uploader"
           :action="uploadAction"
@@ -35,20 +35,27 @@
           :limit="5"
         >
           <el-icon><Plus /></el-icon>
-        </el-upload>
+        </BaseUpload>
         <div class="upload-tip">最多上传 5 张图片</div>
-      </el-form-item>
-    </el-form>
+      </BaseFormItem>
+    </BaseForm>
     <template #footer>
-      <el-button @click="$emit('cancel')">取消</el-button>
-      <el-button type="primary" :loading="submitting" @click="$emit('submit')">提交</el-button>
+      <BaseButton @click="$emit('cancel')">取消</BaseButton>
+      <BaseButton type="primary" :loading="submitting" @click="$emit('submit')">提交</BaseButton>
     </template>
-  </el-dialog>
+  </BaseDialog>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseDialog from '@/components/base/BaseDialog.vue'
+import BaseForm from '@/components/base/BaseForm.vue'
+import BaseFormItem from '@/components/base/BaseFormItem.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import BaseRate from '@/components/base/BaseRate.vue'
+import BaseUpload from '@/components/base/BaseUpload.vue'
 import { UPLOAD_ACTION_URL } from '@/constants/endpoints'
 
 const props = defineProps({

@@ -3,11 +3,11 @@
     <div class="product-review-section__header">
       <h2>商品评价</h2>
       <div class="product-review-section__actions">
-        <el-select :model-value="sort" size="small" style="width: 120px" @change="$emit('update:sort', $event)">
-          <el-option label="最新" value="newest" />
-          <el-option label="最热" value="hottest" />
-        </el-select>
-        <el-button v-if="canReview" type="primary" size="small" @click="$emit('show-review')">发表评价</el-button>
+        <BaseSelect :model-value="sort" size="small" style="width: 120px" @change="$emit('update:sort', $event)">
+          <BaseOption label="最新" value="newest" />
+          <BaseOption label="最热" value="hottest" />
+        </BaseSelect>
+        <BaseButton v-if="canReview" type="primary" size="small" @click="$emit('show-review')">发表评价</BaseButton>
       </div>
     </div>
 
@@ -17,12 +17,12 @@
           <el-avatar :src="getImageUrl(review.userAvatar)" :size="40">{{ review.userName }}</el-avatar>
           <div class="product-review__info">
             <div class="product-review__user">{{ review.userName }}</div>
-            <el-rate :model-value="review.rating" disabled />
+            <BaseRate :model-value="review.rating" disabled />
           </div>
           <div class="product-review__time">{{ formatTime(review.createTime) }}</div>
           <div v-if="isOwner(review)" class="product-review__actions">
-            <el-button type="primary" link size="small" @click="$emit('edit', review)">编辑</el-button>
-            <el-button type="danger" link size="small" @click="$emit('delete', review)">删除</el-button>
+            <BaseButton type="primary" link size="small" @click="$emit('edit', review)">编辑</BaseButton>
+            <BaseButton type="danger" link size="small" @click="$emit('delete', review)">删除</BaseButton>
           </div>
         </div>
 
@@ -55,7 +55,7 @@
               <el-avatar :src="getImageUrl(reply.userAvatar)" :size="28">{{ reply.userName }}</el-avatar>
               <span>{{ reply.userName }}</span>
               <time>{{ formatTime(reply.createTime) }}</time>
-              <el-button v-if="isOwner(reply)" type="danger" link size="small" @click="$emit('delete', reply)">删除</el-button>
+              <BaseButton v-if="isOwner(reply)" type="danger" link size="small" @click="$emit('delete', reply)">删除</BaseButton>
             </div>
             <div class="product-review__reply-content">{{ reply.content }}</div>
             <button type="button" class="product-review__link product-review__link--small" @click="$emit('toggle-like', reply)">
@@ -72,7 +72,11 @@
 
 <script setup>
 import { Pointer, ChatDotRound } from '@element-plus/icons-vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 import EmptyState from '@/components/base/EmptyState.vue'
+import BaseOption from '@/components/base/BaseOption.vue'
+import BaseRate from '@/components/base/BaseRate.vue'
+import BaseSelect from '@/components/base/BaseSelect.vue'
 import { formatTime } from '@/utils/time'
 import { imageUtils } from '@/utils/imageUtils'
 
