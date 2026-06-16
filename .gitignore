@@ -36,3 +36,6 @@ tmp/
 temp/
 db_recovery_backups_*/
 agricultural_products*.sql
+
+# Local course/report materials
+docs/
