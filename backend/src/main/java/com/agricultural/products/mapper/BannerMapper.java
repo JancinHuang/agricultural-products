@@ -46,7 +46,19 @@ public interface BannerMapper {
             """)
     Long countByPage(PageRequest request);
 
-    @Insert("INSERT INTO banner(title, subtitle, button_text, link_url, image, sort, status, create_time, update_time) VALUES(#{title}, #{subtitle}, #{buttonText}, #{linkUrl}, #{image}, #{sort}, #{status}, NOW(), NOW())")
+    @Insert("""
+            INSERT INTO banner(
+              title, subtitle, button_text, link_url, image,
+              show_title, title_color, title_font_size, title_font_weight,
+              subtitle_color, subtitle_font_size, show_button, button_color,
+              sort, status, create_time, update_time
+            ) VALUES(
+              #{title}, #{subtitle}, #{buttonText}, #{linkUrl}, #{image},
+              #{showTitle}, #{titleColor}, #{titleFontSize}, #{titleFontWeight},
+              #{subtitleColor}, #{subtitleFontSize}, #{showButton}, #{buttonColor},
+              #{sort}, #{status}, NOW(), NOW()
+            )
+            """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Banner banner);
 
@@ -59,6 +71,14 @@ public interface BannerMapper {
               <if test="buttonText != null">button_text = #{buttonText},</if>
               <if test="linkUrl != null">link_url = #{linkUrl},</if>
               <if test="image != null">image = #{image},</if>
+              <if test="showTitle != null">show_title = #{showTitle},</if>
+              <if test="titleColor != null">title_color = #{titleColor},</if>
+              <if test="titleFontSize != null">title_font_size = #{titleFontSize},</if>
+              <if test="titleFontWeight != null">title_font_weight = #{titleFontWeight},</if>
+              <if test="subtitleColor != null">subtitle_color = #{subtitleColor},</if>
+              <if test="subtitleFontSize != null">subtitle_font_size = #{subtitleFontSize},</if>
+              <if test="showButton != null">show_button = #{showButton},</if>
+              <if test="buttonColor != null">button_color = #{buttonColor},</if>
               <if test="sort != null">sort = #{sort},</if>
               <if test="status != null">status = #{status},</if>
               update_time = NOW()

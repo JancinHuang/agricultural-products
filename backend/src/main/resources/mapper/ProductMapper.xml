@@ -45,7 +45,11 @@
         <where>
             p.status = 1
             <if test="keyword != null and keyword != ''">
-                AND (p.name LIKE CONCAT('%', #{keyword}, '%') OR p.description LIKE CONCAT('%', #{keyword}, '%'))
+                AND (
+                    p.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR p.description LIKE CONCAT('%', #{keyword}, '%')
+                    OR c.name LIKE CONCAT('%', #{keyword}, '%')
+                )
             </if>
             <if test="categoryId != null">
                 AND p.category_id = #{categoryId}
@@ -77,10 +81,15 @@
     <select id="countSearchProducts" resultType="long">
         SELECT COUNT(*)
         FROM product p
+        LEFT JOIN category c ON p.category_id = c.id
         <where>
             p.status = 1
             <if test="keyword != null and keyword != ''">
-                AND (p.name LIKE CONCAT('%', #{keyword}, '%') OR p.description LIKE CONCAT('%', #{keyword}, '%'))
+                AND (
+                    p.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR p.description LIKE CONCAT('%', #{keyword}, '%')
+                    OR c.name LIKE CONCAT('%', #{keyword}, '%')
+                )
             </if>
             <if test="categoryId != null">
                 AND p.category_id = #{categoryId}

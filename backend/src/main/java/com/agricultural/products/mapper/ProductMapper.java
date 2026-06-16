@@ -17,7 +17,7 @@ public interface ProductMapper {
     @Select("SELECT p.*, c.name as category_name FROM product p LEFT JOIN category c ON p.category_id = c.id WHERE p.status = 1 ORDER BY p.sales DESC LIMIT #{limit}")
     List<Product> findHotProducts(int limit);
     
-    @Select("SELECT p.*, c.name as category_name FROM product p LEFT JOIN category c ON p.category_id = c.id WHERE p.category_id = #{categoryId} AND p.status = 1")
+    @Select("SELECT p.*, c.name as category_name FROM product p LEFT JOIN category c ON p.category_id = c.id WHERE p.category_id = #{categoryId} AND p.status = 1 ORDER BY p.sales DESC, p.create_time DESC")
     List<Product> findByCategoryId(Long categoryId);
     
     List<Product> findByPage(PageRequest request);

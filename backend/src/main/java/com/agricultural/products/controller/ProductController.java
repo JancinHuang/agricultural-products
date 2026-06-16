@@ -38,7 +38,7 @@ public class ProductController {
         return Result.success(productService.findHotProducts(limit));
     }
 
-    @GetMapping("/category/{categoryId}")
+    @GetMapping("/category/{categoryId:\\d+}")
     public Result<List<Product>> byCategory(@PathVariable Long categoryId) {
         return Result.success(productService.findByCategoryId(categoryId));
     }
@@ -48,7 +48,7 @@ public class ProductController {
         return Result.success(productService.findByPage(request));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public Result<Product> getById(@PathVariable Long id) {
         return Result.success(productService.findById(id));
     }
@@ -71,7 +71,7 @@ public class ProductController {
         return success ? Result.success("更新成功") : Result.error("更新失败");
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public Result<String> delete(@PathVariable Long id) {
         if (!SecurityUtils.isAdmin()) {
             return Result.error("无权限操作");

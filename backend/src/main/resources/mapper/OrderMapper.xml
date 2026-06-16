@@ -32,6 +32,19 @@
         ORDER BY o.create_time DESC
         LIMIT #{pageSize} OFFSET #{offset}
     </select>
+
+    <select id="countByPageRequest" resultType="long">
+        SELECT COUNT(*)
+        FROM `order` o
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND o.order_no LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="status != null">
+                AND o.status = #{status}
+            </if>
+        </where>
+    </select>
     
     <update id="update" parameterType="com.agricultural.products.entity.Order">
         UPDATE `order`

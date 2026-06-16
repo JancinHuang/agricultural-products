@@ -41,6 +41,17 @@
         </template>
       </BaseTableColumn>
       <BaseTableColumn prop="title" label="标题" min-width="140" />
+      <BaseTableColumn label="标题显示" width="100">
+        <template #default="{ row }">
+          <StatusTag
+            :value="row.showTitle"
+            :options="[
+              { label: '显示', value: 1, type: 'success' },
+              { label: '隐藏', value: 0, type: 'info' }
+            ]"
+          />
+        </template>
+      </BaseTableColumn>
       <BaseTableColumn prop="subtitle" label="副标题" min-width="220" show-overflow-tooltip />
       <BaseTableColumn prop="buttonText" label="按钮" width="100" />
       <BaseTableColumn prop="linkUrl" label="跳转链接" min-width="140" show-overflow-tooltip />
@@ -110,6 +121,14 @@ const defaultForm = () => ({
   buttonText: '立即查看',
   linkUrl: '/shop',
   image: '',
+  showTitle: 1,
+  titleColor: '#ffffff',
+  titleFontSize: 42,
+  titleFontWeight: 700,
+  subtitleColor: 'rgba(255,255,255,0.9)',
+  subtitleFontSize: 18,
+  showButton: 1,
+  buttonColor: '#2e7d32',
   sort: 0,
   status: 1
 })
@@ -156,6 +175,14 @@ const {
     buttonText: row.buttonText,
     linkUrl: row.linkUrl,
     image: row.image,
+    showTitle: row.showTitle ?? 1,
+    titleColor: row.titleColor || '#ffffff',
+    titleFontSize: row.titleFontSize || 42,
+    titleFontWeight: row.titleFontWeight || 700,
+    subtitleColor: row.subtitleColor || 'rgba(255,255,255,0.9)',
+    subtitleFontSize: row.subtitleFontSize || 18,
+    showButton: row.showButton ?? 1,
+    buttonColor: row.buttonColor || '#2e7d32',
     sort: row.sort,
     status: row.status
   }),

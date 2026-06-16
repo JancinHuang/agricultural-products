@@ -69,6 +69,14 @@ const defaultHeroSlides = [
     subtitle: '从田间到餐桌，每一份都是自然的馈赠',
     btnText: '立即选购',
     link: '/shop',
+    showTitle: 1,
+    titleColor: '#ffffff',
+    titleFontSize: 42,
+    titleFontWeight: 700,
+    subtitleColor: 'rgba(255,255,255,0.9)',
+    subtitleFontSize: 18,
+    showButton: 1,
+    buttonColor: '#2e7d32',
     bg: 'linear-gradient(135deg, #1b5e20 0%, #2e7d32 40%, #4caf50 100%)',
     icon: '🌾'
   },
@@ -77,6 +85,14 @@ const defaultHeroSlides = [
     subtitle: '支持乡村发展，享受绿色健康农产品',
     btnText: '了解更多',
     link: '/shop',
+    showTitle: 1,
+    titleColor: '#ffffff',
+    titleFontSize: 42,
+    titleFontWeight: 700,
+    subtitleColor: 'rgba(255,255,255,0.9)',
+    subtitleFontSize: 18,
+    showButton: 1,
+    buttonColor: '#2e7d32',
     bg: 'linear-gradient(135deg, #33691e 0%, #558b2f 40%, #7cb342 100%)',
     icon: '🌱'
   },
@@ -85,6 +101,14 @@ const defaultHeroSlides = [
     subtitle: '精选热销农产品，产地直发新鲜到家',
     btnText: '查看热销',
     link: '/shop?orderBy=sales',
+    showTitle: 1,
+    titleColor: '#ffffff',
+    titleFontSize: 42,
+    titleFontWeight: 700,
+    subtitleColor: 'rgba(255,255,255,0.9)',
+    subtitleFontSize: 18,
+    showButton: 1,
+    buttonColor: '#ff8f00',
     bg: 'linear-gradient(135deg, #e65100 0%, #ff8f00 40%, #ffb300 100%)',
     icon: '🔥'
   }
@@ -122,7 +146,15 @@ const loadBanners = async () => {
       ...item,
       btnText: item.buttonText || '立即查看',
       link: item.linkUrl || '/shop',
-      imageUrl: item.imageUrl || getBannerImageUrl(item.image)
+      imageUrl: item.imageUrl || getBannerImageUrl(item.image),
+      showTitle: item.showTitle ?? 1,
+      titleColor: item.titleColor || '#ffffff',
+      titleFontSize: Number(item.titleFontSize || 42),
+      titleFontWeight: Number(item.titleFontWeight || 700),
+      subtitleColor: item.subtitleColor || 'rgba(255,255,255,0.9)',
+      subtitleFontSize: Number(item.subtitleFontSize || 18),
+      showButton: item.showButton ?? 1,
+      buttonColor: item.buttonColor || '#2e7d32'
     }))
     if (banners.length) heroSlides.value = banners
   } catch (error) {

@@ -30,7 +30,7 @@ public class UserController {
         return Result.success(result);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public Result<User> getById(@PathVariable Long id) {
         if (!SecurityUtils.isAdmin() && !id.equals(SecurityUtils.getCurrentUserId())) {
             return Result.error(403, "无权访问该用户信息");
@@ -60,7 +60,7 @@ public class UserController {
         return success ? Result.success("更新成功") : Result.error("更新失败");
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public Result<String> delete(@PathVariable Long id) {
         if (!SecurityUtils.isAdmin()) {
             return Result.error(403, "无权操作");
@@ -69,7 +69,7 @@ public class UserController {
         return success ? Result.success("删除成功") : Result.error("删除失败");
     }
 
-    @PutMapping("/status/{id}/{status}")
+    @PutMapping("/status/{id:\\d+}/{status:\\d+}")
     public Result<String> updateStatus(@PathVariable Long id, @PathVariable Integer status) {
         if (!SecurityUtils.isAdmin()) {
             return Result.error(403, "无权操作");

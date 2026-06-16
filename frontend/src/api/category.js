@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import { requirePathId } from '@/api/helpers'
 
 export function getCategoryList() {
   return request.get('/category/list')
@@ -9,7 +10,7 @@ export function getCategoryPage(params) {
 }
 
 export function getCategoryById(id) {
-  return request.get(`/category/${id}`)
+  return request.get(`/category/${requirePathId(id, '分类ID')}`)
 }
 
 export function addCategory(data) {
@@ -21,7 +22,7 @@ export function updateCategory(data) {
 }
 
 export function deleteCategory(id) {
-  return request.delete(`/category/${id}`)
+  return request.delete(`/category/${requirePathId(id, '分类ID')}`)
 }
 
 export function getCategoryCount() {

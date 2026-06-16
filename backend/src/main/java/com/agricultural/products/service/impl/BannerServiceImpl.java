@@ -46,6 +46,7 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public boolean update(Banner banner) {
+        fillDefaults(banner);
         return bannerMapper.update(banner) > 0;
     }
 
@@ -60,6 +61,30 @@ public class BannerServiceImpl implements BannerService {
         }
         if (banner.getStatus() == null) {
             banner.setStatus(1);
+        }
+        if (banner.getShowTitle() == null) {
+            banner.setShowTitle(1);
+        }
+        if (banner.getTitleColor() == null || banner.getTitleColor().isBlank()) {
+            banner.setTitleColor("#ffffff");
+        }
+        if (banner.getTitleFontSize() == null) {
+            banner.setTitleFontSize(42);
+        }
+        if (banner.getTitleFontWeight() == null) {
+            banner.setTitleFontWeight(700);
+        }
+        if (banner.getSubtitleColor() == null || banner.getSubtitleColor().isBlank()) {
+            banner.setSubtitleColor("rgba(255,255,255,0.9)");
+        }
+        if (banner.getSubtitleFontSize() == null) {
+            banner.setSubtitleFontSize(18);
+        }
+        if (banner.getShowButton() == null) {
+            banner.setShowButton(1);
+        }
+        if (banner.getButtonColor() == null || banner.getButtonColor().isBlank()) {
+            banner.setButtonColor("#2e7d32");
         }
     }
 

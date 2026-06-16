@@ -5,10 +5,17 @@
         <div class="home-hero__slide" :style="{ background: slide.imageUrl ? '#1f2a1d' : slide.bg }">
           <img v-if="slide.imageUrl" :src="slide.imageUrl" :alt="slide.title" class="home-hero__image" />
           <div class="home-hero__overlay"></div>
-          <div class="home-hero__content">
-            <h2>{{ slide.title }}</h2>
-            <p>{{ slide.subtitle }}</p>
-            <BaseButton type="primary" size="large" round @click="$emit('open', slide.link || slide.linkUrl || '/shop')">
+          <div v-if="shouldShowText(slide)" class="home-hero__content">
+            <h2 v-if="showTitle(slide)" :style="titleStyle(slide)">{{ slide.title }}</h2>
+            <p v-if="slide.subtitle" :style="subtitleStyle(slide)">{{ slide.subtitle }}</p>
+            <BaseButton
+              v-if="showButton(slide)"
+              type="primary"
+              size="large"
+              round
+              :style="buttonStyle(slide)"
+              @click="$emit('open', slide.link || slide.linkUrl || '/shop')"
+            >
               {{ slide.btnText }}
               <el-icon class="el-icon--right"><ArrowRight /></el-icon>
             </BaseButton>
@@ -32,6 +39,27 @@ defineProps({
 })
 
 defineEmits(['open'])
+
+const isHidden = value => value === 0 || value === false
+const showTitle = slide => !isHidden(slide.showTitle) && Boolean(slide.title)
+const showButton = slide => !isHidden(slide.showButton) && Boolean(slide.btnText)
+const shouldShowText = slide => showTitle(slide) || Boolean(slide.subtitle) || showButton(slide)
+
+const titleStyle = slide => ({
+  color: slide.titleColor || '#ffffff',
+  fontSize: `${Number(slide.titleFontSize || 42)}px`,
+  fontWeight: Number(slide.titleFontWeight || 700)
+})
+
+const subtitleStyle = slide => ({
+  color: slide.subtitleColor || 'rgba(255,255,255,0.9)',
+  fontSize: `${Number(slide.subtitleFontSize || 18)}px`
+})
+
+const buttonStyle = slide => ({
+  backgroundColor: slide.buttonColor || '#2e7d32',
+  borderColor: slide.buttonColor || '#2e7d32'
+})
 </script>
 
 <style scoped>

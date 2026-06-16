@@ -37,7 +37,7 @@ public class BannerController {
         return Result.success(bannerService.findByPage(request));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public Result<Banner> getById(@PathVariable Long id) {
         return Result.success(bannerService.findById(id));
     }
@@ -58,7 +58,7 @@ public class BannerController {
         return bannerService.update(banner) ? Result.success("更新成功") : Result.error("更新失败");
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public Result<String> delete(@PathVariable Long id) {
         if (!SecurityUtils.isAdmin()) {
             return Result.error("无权限操作");

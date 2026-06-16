@@ -30,12 +30,12 @@ public class OrderController {
         return Result.success(orderService.findByPage(request));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public Result<Map<String, Object>> getById(@PathVariable Long id) {
         return Result.success(orderService.getOrderDetail(id, SecurityUtils.getCurrentUserId(), SecurityUtils.isAdmin()));
     }
 
-    @GetMapping("/detail/{id}")
+    @GetMapping("/detail/{id:\\d+}")
     public Result<Map<String, Object>> getDetail(@PathVariable Long id) {
         return Result.success(orderService.getOrderDetail(id, SecurityUtils.getCurrentUserId(), SecurityUtils.isAdmin()));
     }
@@ -58,7 +58,7 @@ public class OrderController {
         return success ? Result.success("更新成功") : Result.error("更新失败");
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public Result<String> delete(@PathVariable Long id) {
         if (!SecurityUtils.isAdmin()) {
             return Result.error(403, "无权操作");
@@ -67,7 +67,7 @@ public class OrderController {
         return success ? Result.success("删除成功") : Result.error("删除失败");
     }
 
-    @PutMapping("/status/{id}/{status}")
+    @PutMapping("/status/{id:\\d+}/{status:\\d+}")
     public Result<String> updateStatus(@PathVariable Long id, @PathVariable Integer status) {
         if (!SecurityUtils.isAdmin()) {
             return Result.error(403, "无权操作");
@@ -94,19 +94,19 @@ public class OrderController {
         return Result.success(orderService.createOrder(SecurityUtils.getCurrentUserId(), order));
     }
 
-    @PutMapping("/pay/{id}")
+    @PutMapping("/pay/{id:\\d+}")
     public Result<String> payOrder(@PathVariable Long id) {
         orderService.payOrder(id, SecurityUtils.getCurrentUserId(), SecurityUtils.isAdmin());
         return Result.success("支付成功");
     }
 
-    @PutMapping("/cancel/{id}")
+    @PutMapping("/cancel/{id:\\d+}")
     public Result<String> cancelOrder(@PathVariable Long id) {
         orderService.cancelOrder(id, SecurityUtils.getCurrentUserId(), SecurityUtils.isAdmin());
         return Result.success("订单已取消");
     }
 
-    @PutMapping("/confirm/{id}")
+    @PutMapping("/confirm/{id:\\d+}")
     public Result<String> confirmOrder(@PathVariable Long id) {
         orderService.confirmOrder(id, SecurityUtils.getCurrentUserId(), SecurityUtils.isAdmin());
         return Result.success("确认收货成功");

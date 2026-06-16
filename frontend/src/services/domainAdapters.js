@@ -45,6 +45,14 @@ export const normalizeBanner = (banner = {}) => ({
   linkUrl: banner.linkUrl || '/shop',
   image: banner.image || '',
   imageUrl: banner.imageUrl || toImageUrl(banner.image),
+  showTitle: banner.showTitle ?? 1,
+  titleColor: banner.titleColor || '#ffffff',
+  titleFontSize: Number(banner.titleFontSize || 42),
+  titleFontWeight: Number(banner.titleFontWeight || 700),
+  subtitleColor: banner.subtitleColor || 'rgba(255,255,255,0.9)',
+  subtitleFontSize: Number(banner.subtitleFontSize || 18),
+  showButton: banner.showButton ?? 1,
+  buttonColor: banner.buttonColor || '#2e7d32',
   sort: Number(banner.sort || 0),
   status: banner.status ?? 1
 })

@@ -1,11 +1,12 @@
 import request from '@/utils/request'
+import { requirePathId } from '@/api/helpers'
 
 export function getProductPage(params) {
   return request.get('/product/page', { params })
 }
 
 export function getProductById(id) {
-  return request.get(`/product/${id}`)
+  return request.get(`/product/${requirePathId(id, '商品ID')}`)
 }
 
 export function getHotProducts(limit) {
@@ -13,7 +14,7 @@ export function getHotProducts(limit) {
 }
 
 export function getProductsByCategory(categoryId) {
-  return request.get(`/product/category/${categoryId}`)
+  return request.get(`/product/category/${requirePathId(categoryId, '分类ID')}`)
 }
 
 export function addProduct(data) {
@@ -25,7 +26,7 @@ export function updateProduct(data) {
 }
 
 export function deleteProduct(id) {
-  return request.delete(`/product/${id}`)
+  return request.delete(`/product/${requirePathId(id, '商品ID')}`)
 }
 
 export function getProductCount() {

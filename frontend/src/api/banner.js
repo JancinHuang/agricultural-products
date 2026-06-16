@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import { requirePathId } from '@/api/helpers'
 
 export function getBannerList() {
   return request.get('/banner/list')
@@ -17,5 +18,5 @@ export function updateBanner(data) {
 }
 
 export function deleteBanner(id) {
-  return request.delete(`/banner/${id}`)
+  return request.delete(`/banner/${requirePathId(id, '轮播图ID')}`)
 }

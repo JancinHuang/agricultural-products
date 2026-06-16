@@ -73,7 +73,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import AdminCrudShell from '@/components/admin/AdminCrudShell.vue'
 import AdminDataTable from '@/components/admin/AdminDataTable.vue'
 import OrderDetailDialog from '@/components/admin/OrderDetailDialog.vue'
@@ -146,4 +146,6 @@ const advanceOrder = async (row) => {
 const deleteOrderRow = async (row) => {
   await confirmDelete(row, () => notify.success('删除成功'))
 }
+
+onMounted(loadData)
 </script>

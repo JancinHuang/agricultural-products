@@ -59,9 +59,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PageResult<Order> findByPage(PageRequest request) {
         List<Order> list = orderMapper.findByPage(request);
-        Long total = request.getKeyword() != null && !request.getKeyword().isEmpty()
-                ? orderMapper.countByKeyword(request.getKeyword())
-                : orderMapper.count();
+        Long total = orderMapper.countByPageRequest(request);
         return new PageResult<>(list, total, request.getPageNum(), request.getPageSize());
     }
 

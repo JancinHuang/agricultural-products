@@ -1,11 +1,12 @@
 import request from '@/utils/request'
+import { requirePathId, requirePathValue } from '@/api/helpers'
 
 export function getUserList(params) {
   return request.get('/user/list', { params })
 }
 
 export function getUserById(id) {
-  return request.get(`/user/${id}`)
+  return request.get(`/user/${requirePathId(id, '用户ID')}`)
 }
 
 export function addUser(data) {
@@ -17,11 +18,11 @@ export function updateUser(data) {
 }
 
 export function deleteUser(id) {
-  return request.delete(`/user/${id}`)
+  return request.delete(`/user/${requirePathId(id, '用户ID')}`)
 }
 
 export function updateUserStatus(id, status) {
-  return request.put(`/user/status/${id}/${status}`)
+  return request.put(`/user/status/${requirePathId(id, '用户ID')}/${requirePathValue(status, '用户状态')}`)
 }
 
 export function getUserCount() {

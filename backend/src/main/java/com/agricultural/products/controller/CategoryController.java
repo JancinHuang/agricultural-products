@@ -39,7 +39,7 @@ public class CategoryController {
         return Result.success(categoryService.findByPage(request));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public Result<Category> getById(@PathVariable Long id) {
         return Result.success(categoryService.findById(id));
     }
@@ -56,7 +56,7 @@ public class CategoryController {
         return success ? Result.success("更新成功") : Result.error("更新失败");
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public Result<String> delete(@PathVariable Long id) {
         boolean success = categoryService.deleteById(id);
         return success ? Result.success("删除成功") : Result.error("删除失败");

@@ -24,6 +24,8 @@ public interface OrderMapper {
     
     @Select("SELECT COUNT(*) FROM `order` WHERE order_no LIKE CONCAT('%', #{keyword}, '%')")
     Long countByKeyword(String keyword);
+
+    Long countByPageRequest(PageRequest request);
     
     @Insert("INSERT INTO `order`(order_no, user_id, total_amount, status, receiver_name, receiver_phone, receiver_address, remark, create_time, update_time) VALUES(#{orderNo}, #{userId}, #{totalAmount}, #{status}, #{receiverName}, #{receiverPhone}, #{receiverAddress}, #{remark}, NOW(), NOW())")
     @Options(useGeneratedKeys = true, keyProperty = "id")
