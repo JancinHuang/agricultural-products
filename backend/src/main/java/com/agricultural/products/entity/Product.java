@@ -19,6 +19,7 @@ public class Product {
     private String unit;
     private String origin;
     private String image;
+    private String imageUrl;
     private Integer status;
     private Integer sales;
     private LocalDateTime createTime;

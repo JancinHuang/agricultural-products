@@ -2,7 +2,7 @@
   <div class="product-detail-main">
     <ProductGallery
       class="product-detail-main__gallery"
-      :images="[product.image]"
+      :images="[product.imageUrl || product.image]"
       :alt="product.name"
       :height="420"
     />

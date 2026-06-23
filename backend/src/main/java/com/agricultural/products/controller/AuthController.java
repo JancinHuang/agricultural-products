@@ -4,6 +4,7 @@ import com.agricultural.products.common.Result;
 import com.agricultural.products.common.SecurityUtils;
 import com.agricultural.products.dto.LoginRequest;
 import com.agricultural.products.dto.RegisterRequest;
+import com.agricultural.products.dto.UserResponse;
 import com.agricultural.products.entity.User;
 import com.agricultural.products.service.UserService;
 import com.agricultural.products.utils.JwtUtils;
@@ -42,11 +43,10 @@ public class AuthController {
         }
 
         String token = jwtUtils.generateToken(existUser.getId(), existUser.getUsername(), existUser.getRole());
-        existUser.setPassword(null);
 
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
-        data.put("user", existUser);
+        data.put("user", UserResponse.from(existUser));
         return Result.success("登录成功", data);
     }
 
@@ -64,12 +64,9 @@ public class AuthController {
     }
 
     @GetMapping("/info")
-    public Result<User> getUserInfo() {
+    public Result<UserResponse> getUserInfo() {
         Long userId = SecurityUtils.getCurrentUserId();
         User user = userService.findById(userId);
-        if (user != null) {
-            user.setPassword(null);
-        }
-        return Result.success(user);
+        return Result.success(UserResponse.from(user));
     }
 }

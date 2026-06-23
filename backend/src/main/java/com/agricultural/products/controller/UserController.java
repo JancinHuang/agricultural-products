@@ -5,6 +5,7 @@ import com.agricultural.products.common.PageResult;
 import com.agricultural.products.common.Result;
 import com.agricultural.products.common.SecurityUtils;
 import com.agricultural.products.dto.UpdatePasswordRequest;
+import com.agricultural.products.dto.UserResponse;
 import com.agricultural.products.entity.User;
 import com.agricultural.products.service.UserService;
 import jakarta.validation.Valid;
@@ -21,25 +22,27 @@ public class UserController {
     }
 
     @GetMapping("/list")
-    public Result<PageResult<User>> list(PageRequest request) {
+    public Result<PageResult<UserResponse>> list(PageRequest request) {
         if (!SecurityUtils.isAdmin()) {
             return Result.error(403, "无权操作");
         }
         PageResult<User> result = userService.findByPage(request);
-        result.getList().forEach(u -> u.setPassword(null));
-        return Result.success(result);
+        PageResult<UserResponse> response = new PageResult<>(
+                UserResponse.fromList(result.getList()),
+                result.getTotal(),
+                result.getPageNum(),
+                result.getPageSize()
+        );
+        return Result.success(response);
     }
 
     @GetMapping("/{id:\\d+}")
-    public Result<User> getById(@PathVariable Long id) {
+    public Result<UserResponse> getById(@PathVariable Long id) {
         if (!SecurityUtils.isAdmin() && !id.equals(SecurityUtils.getCurrentUserId())) {
             return Result.error(403, "无权访问该用户信息");
         }
         User user = userService.findById(id);
-        if (user != null) {
-            user.setPassword(null);
-        }
-        return Result.success(user);
+        return Result.success(UserResponse.from(user));
     }
 
     @PostMapping

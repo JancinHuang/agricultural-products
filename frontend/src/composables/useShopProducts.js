@@ -45,7 +45,10 @@ export function useShopProducts() {
   const preloadNearbyImages = () => {
     const urls = products.value
       .slice(0, 4)
-      .map(product => product.image ? imageUtils.getImageUrl(product.image, { width: 640, quality: 80 }) : null)
+      .map(product => {
+        const image = product.imageUrl || product.image
+        return image ? imageUtils.getImageUrl(image, { width: 640, quality: 80 }) : null
+      })
       .filter(Boolean)
 
     if (urls.length > 0) {
@@ -116,8 +119,9 @@ export function useShopProducts() {
   }
 
   const handleImageClick = (product) => {
-    if (product.image) {
-      previewImages.value = [product.image]
+    const image = product.imageUrl || product.image
+    if (image) {
+      previewImages.value = [image]
       previewIndex.value = 0
       previewVisible.value = true
     }

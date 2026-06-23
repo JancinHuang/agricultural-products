@@ -128,7 +128,7 @@ public class ProductServiceImpl implements ProductService {
         if (product == null) {
             return null;
         }
-        product.setImage(objectStorageService.toAccessibleUrl(product.getImage()));
+        product.setImageUrl(objectStorageService.toAccessibleUrl(product.getImage()));
         return product;
     }
 }
